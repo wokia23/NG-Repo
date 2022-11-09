@@ -1,0 +1,1096 @@
+-Local admin username is . \kargobx and password is Gickkat1OpmecIcIj<
+	- Domain FQDN is edsdomokxix.eds.com
+	- To log into the bastion username is kargobx@edsdomokxix.eds.com and password is Shilohangel@2023. For RDP bastion make sure to put entire username kargobx@edsdomokxix.eds.com
+	- To ssh into a bastion or a server run
+ssh -l kargobx@edsdomokxix.eds.com 10.129.22.137 for stage bastion(This is either the ip address of the server or that of the bastion.
+ssh -l kargobx@edsdomokxix.eds.com 10.129.17.18 for migration 01 stage
+ssh -l kargobx@edsdomokxix.eds.com 10.129.40.106 ( Prod migration passport health)
+ssh -l kargobx@edsdomokxix.eds.com 10.129.47.84 for migration test-prod1
+Datasync credentials  
+prod: admin
+J#OqLB>Wh"n5Fx{[
+
+Make sure to associate the security group to the instance after cutover 
+Process for Pre-wigs by James Fox
+PreWigs Process
+To do an autoprewig submit an RFC to update resource tags (ct-0xqwmtn1hf). You are going to input the instance ID and under additional configuration paste this under add or update tags:
+{"Key":"AutoPreWIG","Value":"1"}
+From her go to SSM:State manager:AMS-PreWIG-Prep-and-Validation-Association:
+Step 1:   Copy the following scripts to the windows-prewigs-validations folder:
+· Upgrade-PowerShell.ps1
+· prep-ingestion-MMS-20200921-Updated.ps1
+· WIGPrep-RegFix-2008-2012.ps1
+	 
+Step 2:   Open Power shell in admin mode
+ 
+Step 3 :   cd to the extracted directory.
+ 
+Step 4:    Run "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass"
+ 
+Step 5:    Run the 3 scripts (in order) in Step 2.
+- First script is the upgrade script
+- Second is the Prep scripts 
+- Last is Wigprep script
+ 
+Step 6:    check (and uninstall)  KB3000850 (sppnp.dll corruption fix) – ( only for on 2016 systems? )
+                Run "wusa/uninstall /kb:3000850"
+	       reboot (patch removal should force and auto reboot)
+                 Here you can remove it manually by going to control panel and uninstalling this
+ 
+Step 7:     Run "sfc /scannow"
+ 
+ 
+Validation Process
+ 
+Step 1:  Download and extract the following to a local folder:
+	https://ams-os-distributables.s3-us-west-2.amazonaws.com/pre-wigs-validation/windows/windows-prewigs-validation.zip
+ 
+Step 2:     cd to subfolder windows-prewigs-validation\AWSManagedServices.PreWigs.Validation.
+ 
+Step 3:   Run "Import-Module .\AWSManagedServices.PreWigs.Validation.psm1 –force"
+ 
+Step 4:  "Run Invoke-PreWIGsValidation > log.txt"
+ 
+Step 5:   Review log.txt for validation pass/fail results.
+
+For error with sfc.exe review this document in the below link
+https://support.microsoft.com/en-us/topic/use-the-system-file-checker-tool-to-repair-missing-or-corrupted-system-files-79aa86cb-ca52-166a-92a3-966e85d4094e
+This is the command to run: Dism /Online /Cleanup-Image /RestoreHealth
+
+To remove a server from domain and to start SSM
+netdom remove USOCWOKVM003 /domain:edsdomokxix.eds.com /force 
+security group to be added after cutover for instance:
+sg-0913c4128dc9f3a66
+sg-060d0028c113f72d4
+proxy should look like this http://192.168.121.10:3128/
+To check which AMI was ingested go to the snapshots and verify the AMI 
+MGN Installation:
+python .\1-AgentInstall.py --waveid 3 --SecretWindows-service-account --IAMUserCredentialSecret ams-shared/users/credentials/MGNAgentInstallUser-112394763914/accesskey
+
+after you get the AMIc create an RFC using CT ct-14027q0sjyt1h. Its am automated RFC.
+When filling out this application you set true for EBS optimized, remove the instance toot volume IOPs, remove the instance root volume type and set it to none and input the security group you want otherwise it will default to the sentiel security groups.
+After ingesting the server and updating the tags go back to the mgn customer role in prod and select the server then finalize cutover and mark server as archived. 
+
+How to get SSM to bypass the proxy
+
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\AmazonSSMAgent" -Name "Environment" -PropertyType MultiString -Value "no_proxy=169.254.169.254"
+
+To add port to http or httpswigr
+- Cd /etc/httpd/conf for http and cd /etc/httpd/conf.d for https
+- Netstat -tulpn | grep -I listen to see what port is listening
+- Yum install mod-ssl to install https to a server
+netstat -anp | grep :8212
+curl -lvk https://internal-bkinternal-alb-1135776217.us-east-1.elb.amazonaws.com to check for load balancer DNS
+[July 20, 2022, 10:38 PM] Rehman, Toufiq: tcpdump -n host
+[July 20, 2022, 10:46 PM] Rehman, Toufiq: tcpdump -s 0  -w clientpcap.pcap
+curl -kv http://localhost:8211 checks if server has access to a particular URL
+How to temporarily or permanently disable SELINUX on a server. This is required when adding a new port to http or https
+https://www.tecmint.com/disable-selinux-in-centos-rhel-fedora/
+
+execution server IP and DNS:192.168.188.63 & USOCWOKVM299.EDSDOMOKXIX.EDS.COM 
+Datasync stage agent IP: 192.168.184.91 (USOCVOKVM008)
+subnet for stage: 10.131.233.0/24
+migration subnet for prod 10.131.234.0/24
+server name: USOCVOKVM008.EDSDOMOKXIX.eds.com 
+Datasync stage endpoint:10.131.233.78
+Datasync prod agent IP: 192.168.184.96/32
+Datasync prod endpoint: 10.131.234.90    
+NFS/SMB Server IP: 192.168.184.94
+prod server for MGN USOCWOKVM369.EDSDOMOKXIX.eds.com (192.168.184.87) 
+192.168.188.0/24
+usocwokvm349 192.168.188.32
+test-netconnection mgn.us-east-1.amazonaws.com -port 443
+setx /m https_proxy 192.168.121.10:3128/  to set proxy in a server
+NTP server: 169.254.169.123
+To synchronize the NTP server go to the vcenter and under actions go to edit settings-> VM Options-> VM Tools -> Tools upgrade and then check and upgrade VMware tools before each power on 
+to change ingress rules you can use the authroize or revoke ingress rules
+
+To set the env variables for windows
+
+You have successfully created a new activation. Your activation code is listed below. Copy this code and keep it in a safe place as you will not be able to access it again.
+Activation Code   4gss5coZJGJBsX776QaV
+
+Activation ID   83ff5cba-53f0-4991-8d9c-effa40ade5d9
+
+vpce-09d9a3d2a7d0086b5-tly2u4dd.datasync.us-east-1.vpce.amazonaws.com
+
+
+All requirements for OK-UAT-ESB-INTERNAL
+Alb name: stack-LoadB-1A3HZWS7ZYZAP
+Security group for ALB: sg-037875d3ac3b4471e (Always use this default SG for Oklahoma)
+subnets are : customer application-a and dmz-can
+Target group: ok-uat-esb-internal-target-group
+
+All requirements for OK-UAT-ESB-INTERNAL
+alb name: ok-uat-esb-internal
+Security group: sg-077b1077b0007db3e, sg-0f018536d5417fd8a, sg-033c71466daad6d58, sg-00a52417cf6c8480c
+Target group name: ok-uat-esb-internal1
+
+VPN_sysadmin
+vSphere_AME
+
+
+
+Users for private accounts: 
+ShilohIT: access_key:AKIAXB5IN5PEKWT5M5OU
+          Secret_key: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
+AngelMeg: access_key:AKIAXB5IN5PEK2ZVP4MG
+          Secret_key: 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
+		  Password: Pigeons@2022
+		  
+		  
+   ok-uat-w-initiate: i-03a468e827146d796(10.129.16.27)  image/ami-047fedd0ba7c53cdf
+   copy is uat-w-initiate-copy
+   ok-uat-w-dbinitiate: i-029dc6c5545a6fcf7 (10.129.17.158): ami-0079acd5fe2445bb7
+   copy is ok-uat-w-dbinitiate-copy
+   
+   Alb for ok-uat-hcp-epe
+   - alb name (ARN): ok-uat-hcp-epe ( arn:aws:elasticloadbalancing:us-east-1:990681078292:loadbalancer/app/ok-uat-hcp-epe/bde9ae1d7a30f648)
+   - target-group name: ok-uat-hcp-https
+   - target-group name: ok-uat-epe-https
+   
+   Uninstalled tremd micro deep security agent
+   AWSEC2-CloneInstanceAndUpgradeWindows
+   We need to provide a keypair for the instance during the process
+   
+   Internal Alb for ok-uat-hcp-epe
+   - alb name (ARN): OK-UAT-HCP-EPE-Internal (arn:aws:elasticloadbalancing:us-east-1:990681078292:loadbalancer/app/OK-UAT-HCP-EPE-Internal/b54ddcf0dc5103e2)
+   - target-group name: ok-uat-hcp-https-internalv2
+   - target-group name: ok-uat-epe-https-internal
+   
+   
+   
+   Info initiate for migration
+   - instance ID: i-08f8305549d656b89
+   - Subnet-ID: subnet-05fce92ceef7a6833
+   - us-east-1
+   - IAM-role: customer-mc-ec2-instance-profile
+   - rescue key pair
+    AWSEC2-CloneInstanceAndUpgradeWindows
+   
+   
+  UPGARDING SERVER PORTS IN WINDOWS SERVER
+  - To change or add the ports in a windows server go to the windows button and type iis (stands for internet information services) and select.
+  - From here click on the drop down menu on the server name and navigate to sites. 
+  - From here you can either select default website or the site name. 
+  - When you select the site name go to bindings on the right of the navigation pane and from here you should be able to view and edit the ports for which you want the server to run on. 
+  - After this restart the iis/reset /stop to stop the web services and iisreset /start to start it
+  - To see listening ports run netstat -a | findstr "LISTEN"
+  WIN-203UDT8A938
+  
+ Do this through regedit 
+  /code
+Label                         Result Enforcement Configuration Description     
+-----                         ------ ----------- ------------- -----------     
+Get Sysprep Status            Fail   Required    Default       Please remove   
+                                                               the already     
+                                                               present         
+                                                               unattend.xml    
+                                                               file from c\Win
+                                                               dows\Panther\.  
+ Go to REGEDIT after clicking on the windows icon                                                                              
+Check Sysprep Registry Values Fail   Recommended Default       HKLM 		(HKEY_LOCAL_MACHINE):\SYSTEM\Set
+                                                               up\Status\Syspre
+                                                               pStatus\Generali
+                                                               zationState     
+                                                               should be set   
+                                                               to 7   
+  
+
+{
+                  "Sid": "AllowCreateCWMetricsAndManageDashboards",
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudwatch:PutMetricData"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+
+Microsoft SQL Server 2016 Standard on Windows Server 2012 R2 RTM
+ami-005fd9d3af97b73bf windows 2012 sql 2016 for stage
+ami-0a3887ef4b237da34 windows 2012 sql 2106 for prod
+
+
+RFC To purchase an AMI from the marketplace to your AWS accounts. This is done with a MOO RFC
+
+Description:  This activity to be executed by AD admin due to KMS dependency. Please help making SQL Server below available in this AMS account in us-east-1 region. 
+1.            Create new EC2 instance from AMI from Marketplace. The AMI name is: “Microsoft Windows Server 2012 R2 RTM with SQL Server 2016 Standard” that is available in the Marketplace. Note: This AMI does NOT require subscription. 
+2.            Once EC2 is stood up, perform AMS Ingestion (aka Workload Ingestion) to generate an AMS’fied AMI. 
+3.            Once the Ingestion succeeds, delete the temporary instance created in step1
+
+AWSApplicationMigrationAgentPolicy
+authorize ingress rule to update the inbound and outbound rule for an ALB or NLB
+ok-uat-w-webenet-001 (i-057510c94efd3b816)
+ok-mod-w-webenet-001 (i-088ef620009b2908c)
+usocwokvm272.EDSDOMOKXIX.EDS.COM
+
+1. Before cloning : run "Invoke-AMSSysprep" 
+2. The above command will stop the instance 
+3. Take AMI 
+4. launch new instance using this AMI 
+5. Start the old instance 
+ami-02c4b00fe0c58c24c (AMI for Rhel8 for initiate servers)
+
+ok-tst-initiate-DB2 (10.129.16.134)
+ok-tst-initiate (10.129.17.180)
+ok-mod-initiate-DB2 (10.129.17.27)
+ok-mod-initiate (10.129.17.91)
+
+MGN-Users
+Access_key: AKIAUTQOQD7E26AKTGME
+Secre_key: 1xoLP+cIqmEbeJHJfQKcLmkCOu+uOZ3bZAqBqSzd
+
+Test-NetConnection -ComputerName sts.us-east-1.amazonaws.com -Port 443
+http://proxy_script.edsdomokxix.eds.com/wpad.dat
+setx HTTP 192.168.121.10:3128
+
+#/bin/bash
+yum update -y
+yum install httpd.x86_64
+systemctl start httpd.service
+systemctl enable httpd.service
+echo " Hello World from ${hostname -f}" > /var/www/html/index.html
+
+Sharing an AMI – We had some issues. 
+
+Here are the steps.
+
+1)	Create a State-specific KMS key
+2)	Create a Golden AMI of the server using the KMS key in step 1
+a.	If the AMI is already done and uses a AWS-supplied key, you can ‘copy AMI’ and supply the key from Step 1
+3)	Share the KMS Key between the 2 accounts
+4)	Share the Golden AMI
+5)	Share the snapshots from the Golden AMI
+
+gdisk /dev/plus device name to create a partition. If it has a partition it will have a p at the begining of the nameselect n for new partition and the default for everything else
+8e00
+while in vi mode in esc type cw to change words 
+ mkfs -t xfs /dev/mapper/vgiws-lviws
+  clear
+ 1002  cd /opt
+ 1003  ls -l
+ 1004  cd IBM/
+ 1005  ls -l
+ 1006  mkdir IWS
+ 1007  cd IWS/
+ 1008  ls -l
+ 1009  cd
+ 1010  lsblk -l
+       lsblk -o NAME,SERIAL,SIZE,FSTYPE
+ 1011  gdisk /dev/nvme10n1
+ 1012  lsblk -l
+ 1013  pvcreate /dev/nvme10n1p1
+ 1014  pvs
+ 1015  vgcreate vgiws /dev/nvme10n1p1
+ 1016  vgs
+ 1017  lvcreate -L 19.99G -n lviws vgiws
+       lvcreate -l 100%free -n lviws vgiws
+ 1018  lvs
+ 1019  vgs
+ 1020  cd /etc/fstab
+ 1021  cd /etc/
+ 1022  vi fstab
+ 1023  mount /opt/IBM/IWS
+ 1024  mkfs -t xfs /dev/mapper/vgiws-lviws
+ 1025  mount /opt/IBM/IWS
+ 1026  df -h
+ 1027  history
+ for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+ do
+ lvcreate -L 1T -n lvorata$i vgoracleasm
+ done
+ to remove a vg group do vgremove plus volume group name
+ vgdisplay -v vgoraleasm | more
+ if you gro partition on disk that is associated to a disk in lvm you need to do a pvresize after that to resize the physical volume pvresize /dev/nvmexx where xx is the device number
+ to remove pv group run pvremove /dev/nvme12n1p1   where 12n1p1 is the device number 
+ if you see lvm2 member you have to do pvremove and remove the physical volume
+  lvdisplay|awk  '/LV Name/{n=$3} /Block device/{d=$3; sub(".*:","dm-",d); print d,n;}'  to show what dm corrlate to in devices
+  lsblk -o NAME,SERIAL,SIZE,FSTYPE,KNAME gives you all the info you need 
+ Remember 1T is 1024GB
+ dmesg | tail -10
+ To shutdown run shutdown -r now for linux boxes
+ to grow a partition run growpart /dev/nvme2n1 1 where one is just the one partition
+ to unmount a logical volume run umount /directory
+ to install pvcreate command do a yum install lvm2
+ to remove logical volume run command lvremove /dev/vgiws/logical volume name
+This is how the vi fstab looks like
+/dev/mapper/vgiws-lviws  /opt/IBM/IWS           xfs     defaults,nofail         0 0
+ts        0 0
+/dev/mapper/vgswap1-lvswap1     swap swap defaults 0 0
+/dev/mapper/vgu01-lvu01 /u01    xfs defaults 0 0
+/dev/mapper/vgu80-lvu80 /u80    xfs defaults 0 0
+/dev/mapper/vgu99-lvu99 /u99    xfs defaults 0 0
+/dev/mapper/vggoldengate-lvgoldengate /u99/app/goldengate       xfs defaults 0 0
+/dev/mapper/vgoracle-lvoracle  /u99/app/oracle  xfs defaults 0 0
+use this server as a test server to clone from stage to prod
+ok-stg-w-mapmarker
+To encrypt an AMI the ct is  ct-1eiczxw8ihc18
+new AMI for the above instance is ami-0c383faed8b27311d name ok-stg-w-mapmarkercopy
+mstsc /restrictedadmin on the command prompt to login to mapmarker
+
+NEW-AMI For
+ok-uat-w-webdet-002:ami-0740583ec4898444a (ami-0740583ec4898444a)
+ok-uat-w-webpm-002:ami-0020adcb9e57cb539
+ok-uat-w-webenet-003:ami-095928eca4acfbcf1
+
+1. Before cloning : run "Invoke-AMSSysprep" 
+2. The above command will stop the instance 
+3. Take AMI 
+4. launch new instance using this AMI 
+5. Start the old instance 
+ami-02c4b00fe0c58c24c (AMI for Rhel8 for initiate servers)
+
+ok-uat-w-webdet-002:(10.129.23.80)
+ok-uat-w-webpm-002:(10.129.23.8)
+ok-uat-w-webenet-003: (10.129.23.69)
+
+ok-uat-w-appcom-step-1 (ami-0891d87f0870eaf98) Is the Golden AMI for ok-uat-w-appcom
+Final AMI is ok-uat-w-appcom-step-1-prod (ami-04ad0c567d4171cc7)
+
+Real Golden AMI IS ami-0d790dd03cf08b420
+
+In case you run across RFC's that fail and delete your EC2 when creating them...some of the latest updates in visual studio include C++ x86 and x64.  There is a documented problem with the x86 and it should be removed from the ingested image or on any EC2 that will be turned into an AMI.  There is a known problem with VC++ 2022 x86 with the CFN signaler since it was built on an older version of C++.
+
+Commands to verify: 
+Get-WmiObject -Class Win32_Product | Select-Object -Property Name > 😄\Install\SoftwareList.txt
+cmd /c 
+start 😄\Windows\notepad.exe 😄\Install\SoftwareList.txt & Start Appwiz.cpl
+
+if C++ 2022 x86 is listed uninstall it from add/remove programs
+
+setx /m https_proxy 192.168.121.10:3128/  to set proxy in a server
+
+MGN Installation:
+python .\1-AgentInstall.py --waveid 3 --SecretWindows-service-account --IAMUserCredentialSecret ams-shared/users/credentials/MGNAgentInstallUser-112394763914/accesskey  (Run this command in the execution server to start wave migration)
+
+Powershell scripts to set proxy in case of proxy in the server. This will be part of the automation server
+RFC ID: 4eb8e1c0-1bf3-f681-ef0c-547e92401184
+
+  TO set the timezone on a linux server see below
+  https://www.tecmint.com/set-time-timezone-and-synchronize-time-using-timedatectl-command/
+  
+  To set timezone for windows
+  https://www.dtonias.com/set-time-date-timezone-settings-sesrver-2016/
+  https://gist.github.com/HauptJ/4dd5e28a0ff108d3784a70578c770b3a
+  chronyc lsources -v exit
+  
+  America/North_Dakota/Beulah
+  America/North_Dakota/Center
+  
+  getenforce and sestatus to find out status of selinux 
+  to set se linux as permissive run setenforce Permissive
+  To set it back to Enforcing run setenforce Enforcing
+  sudo timedatectl set-timezone <your_time_zone>
+  timedatectl
+  ok-uat-w-appcom-prodrealtemplate.json: Template for all prod clone servers
+  C:\Program Files (x86)\AWS Replication Agent\dist To uninstall the agent on powershell
+  install_agent_windows.exe --remove
+  ami-09842f1a6b707a317: AMI for server 369 for MGN
+  
+  I will like the MGN installation agent be installed in the following on-prem prod server
+usocwokvm097. I will also like for a local admin account be created on the server. Thanks
+  
+  UPDATING TAGS FOR INSTANCE FOR SCHEDULE
+  - Go to AWS Resource groups and under tag editor select ec2-instance under resource types
+  
+  
+  
+  STEPS FOR MGN Process
+  - First fill out the ACQ form. You dont have to fill out the tags as this will be done manually throuh an RFC
+  - Login to migration factory
+  - While in Migration factory go to imprt and add your ACQ form
+  - 
+  
+  
+  To remove server from hostname
+  # hostname
+Test-ComputerSecureChannel -verbose To test if the instance is properly attached to the domain
+netdom remove <hostname> /domain:A<accountID>.amazonaws.com /force
+Rename-Computer -NewName "<newhostname" -force -restart
+Powershell.exe -ExecutionPolicy RemoteSigned -Command "Import-Module AWSManagedServices.Access.Utilities; Initialize-AMSAccess": This forces the instance to join the domain
+
+How to add a swpfile 
+dd if=/dev/zero of=/swapfile3 bs=1024 count=8388608
+mkswap /swapfile3     it to format it to be used as swap
+chmod 0600 /swapfile4
+vi /etc/fstab
+swapon -a
+free
+1024*1024*1024 is 1GB so you multiply by 8 to get 8GB
+free -g in gigabites
+free -m in megabites
+
+Bucket Name
+okxixstgarchivalbucket:  arn:aws:s3:::okxixstgarchivalbucket
+okxixstglogsbucket: arn:aws:s3:::okxixstglogsbucket
+KMS key:arn:aws:kms:us-east-1:990681078292:key/f7f625a1-bd57-44ac-b287-d5a0ca23b354
+ 
+- Ensuring that the agents are being deployed  --currently running at 7:30pm need to change to 5:30pm. Will submit RFC to do process
+- Agents are reporting to the correct watch tower group --- Already emailed Kwon about this
+- Ensure that the patches are set correctly and that AMS is doing the patch
+
+Updating nessus agents on windows servers (Run this on the command prompt)
+STAGE:
+C:\Windows\system32\net stop "Tenable Nessus Agent" & REG DELETE HKLM\Software\Tenable /f /v TAG & C:\Windows\system32\net start "Tenable Nessus Agent" & "C:\Program Files\Tenable\Nessus Agent\nessuscli" agent unlink (--force) & "C:\Program Files\Tenable\Nessus Agent\nessuscli" agent link --key=ce1bce183236fa1d8eeeb330c6bc99958d78c5152ef98a322ad89c5c15a50406 --groups=AMSOKLAHOMA-STAGE-US --host=cloud.tenable.com --port=443
+
+PROD:
+C:\Windows\system32\net stop "Tenable Nessus Agent" & REG DELETE HKLM\Software\Tenable /f /v TAG & C:\Windows\system32\net start "Tenable Nessus Agent" &"C:\Program Files\Tenable\Nessus Agent\nessuscli" agent unlink (--force) & "C:\Program Files\Tenable\Nessus Agent\nessuscli" agent link --key=ce1bce183236fa1d8eeeb330c6bc99958d78c5152ef98a322ad89c5c15a50406 --groups=AMSOKLAHOMA-PROD-US --host=cloud.tenable.com --port=443
+
+Use the below command to check the nessus status for windows on CMD:
+"C:\Program Files\Tenable\Nessus Agent\nessuscli" agent status
+
+[info] [agent] HostTag::createWindows: setting TAG value to '7be6b80143754c74b80603fc525ed2ce'
+[info] [agent] Successfully linked to cloud.tenable.com:443
+[info] [agent] HostTag::createWindows: setting TAG value to '7be6b80143754c74b80603fc525ed2ce'
+[info] [agent] Successfully linked to cloud.tenable.com:443
+
+
+Ora data and ora fra are what oracle uses for their grid framework
+
+Commands to add the server to the nessus agent group and add them to tenable
+ls -ld /opt/nessus_agent
+[9:17 AM] Sanghvi, Badal
+/opt/nessus_agent/sbin/nessuscli agent status --local
+
+[9:17 AM] Sanghvi, Badal
+/opt/nessus_agent/sbin/nessuscli agent unlink
+
+[9:18 AM] Sanghvi, Badal
+/opt/nessus_agent/sbin/nessuscli agent link --key=ce1bce183236fa1d8eeeb330c6bc99958d78c5152ef98a322ad89c5c15a50406 --groups=AMSOKLAHOMA-PROD-US --host=cloud.tenable.com --port=443
+
+S 294  cd
+  295  df -h
+  296  lsblk -o NAME,SERIAL,SIZE,FSTYPE,KNAME
+  297  echo '1024 * 16' | bc
+  298  df -h
+  299  while true; do lsblk -o NAME,SERIAL,SIZE,FSTYPE,KNAME; sleep 60; done
+  300  gdisk /dev/nvme10n1
+  301  lsblk -o NAME,SERIAL,SIZE,FSTYPE,KNAME
+  302  pvcreate /dev/nvme10n1p1
+  303  vgcreate vgoracleasm /dev/nvme10n1p1
+  304  vgs
+  305  for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15; do lvcreate -L 1T -n lvoradata$i vgoracleasm; done
+  306  lvs
+  307  ls -la /dev/mapper/
+  308  vgs
+  309  vgdisplay -v
+  310  vgdisplay -v vgoracleasm | more
+  311  lvcreate -l 262143 -n lvorafra01 vgoracleasm
+  312  vgs
+  313  ls -la /dev/mapper/
+  314  vgs
+  315  lvs
+  316  clear
+  317  df -h
+  318  umount /u01/
+  319  umount /u80/
+  320  df -h
+  321  vgs
+  322  lsblk -o NAME,SERIAL,SIZE.KNAME,FSTYPE
+  323  lsblk -o NAME,SERIAL,SIZE,KNAME,FSTYPE
+  324  vgremove /u01/
+  325  vgremove vgu01
+  326  vgremove vgu80
+  327  vgs
+  328  lsblk -o NAME,SERIAL,SIZE,KNAME
+  329  PVS
+  330  pvs
+  331  pvremove /dev/nvme12n1p1
+  332  pvs
+  333  lsblk -o NAME,SERIAL,SIZE,KNAME
+  334  growpart /dev/nvme11n1 1
+  335  lsblk -o NAME,SERIAL,SIZE,KNAME
+  336  pvs
+  337  pvresize /dev/nvme11n1p1
+  338  pvs
+  339  vgs
+  340  vgcreate vgu80 /dev/nvme11n1p1
+  341  vgs
+  342  lvcreate -L 100G -n lvu01 vgu80
+  343  lvcreate -L 100G -n lvu01ora vgu80
+  344  lvcreate -L 100G -n lvu01grid vgu80
+  345  vgs
+  346  lvcreate -l 100%free -n lvu80 vgu80
+  347  vgs
+  348  mkfs -t xfs /dev/mapper/vgu80-lvu01
+  349  mkfs -t xfs /dev/mapper/vgu80-lvu01ora
+  350  mkfs -t xfs /dev/mapper/vgu80-lvu01grid
+  351  mkfs -t xfs /dev/mapper/vgu80-lvu80
+  352  ls -la /dev/mapper/
+  353  vi /etc/fstab
+  354  mount /u01/
+  355  vi /etc/fstab
+  356  mount /u80/
+  357  vi /etc/fstab
+  358  cd /u01/
+  359  mkdir app
+  360  cd app/
+  361  mkdir oracle
+  362  mkdir grid
+  363  cd oracle/
+  364  mkdir product
+  365  cd ../oracle
+  366  cd ../grid/
+  367  pwd
+  368  mkdir product
+  369  cd
+  370  vi /etc/fstab
+  371  mount /u01/app/oracle/product/
+  372  mount /u01/app/grid/product/
+  373  clear
+  374  df -h
+  375  history
+  376  free
+  377  vi /etc/fstab
+  378  free
+  379  swappoff -a
+  380  swapoff -a
+  381  free
+  382  vi /etc/fstab
+  383  swapon -a
+  384  free
+  385  cd /
+  386  ls -la
+  387  rm swapfile1
+  388  rm swapfile2
+  389  df -h
+  390  clear
+  391  history
+  183  swapoff /swapfile1
+  184  swapoff /swapfile2
+  185  free
+  186  vi /etc/fstab
+  187  swapon -a
+  188 
+  189  vgs
+  190  lsblk -l
+  191  history
+  dev/mapper/vgiws-lviws  /opt/IBM/IWS           xfs     defaults,nofail         0 0
+ts        0 0
+/dev/mapper/vgswap1-lvswap1     swap swap defaults 0 0
+/dev/mapper/vgu01-lvu01 /u01    xfs defaults 0 0
+/dev/mapper/vgu80-lvu80 /u80    xfs defaults 0 0
+/dev/mapper/vgu99-lvu99 /u99    xfs defaults 0 0
+/dev/mapper/vggoldengate-lvgoldengate /u99/app/goldengate       xfs defaults 0 0
+/dev/mapper/vgoracle-lvoracle  /u99/app/oracle  xfs defaults 0 0:
+[root@e847ba05fc4d43c 
+vgdisplay -v vgoacleasm
+Once you run this command get the total pe and divide by the number of volumes you want and use that to create the logical volumes
+yum insta
+To run a loop in linux run
+while true
+do
+command you want looping ex lsblk -l
+sleep 60
+done
+
+How to install nessus in Linux
+curl -H 'X-Key:ce1bce183236fa1d8eeeb330c6bc99958d78c5152ef98a322ad89c5c15a50406' 'https://cloud.tenable.com/install/scanner?name=scanner-name&groups=AMSOKLAHOMA-PROD-US' | bash
+
+How do I merge to master?
+First we run git checkout master to change the active branch back to the master branch. Then we run the command git merge new-branch to merge the new feature into the master branch. Note: git merge merges the specified branch into the currently active branch.
+ 321  lvs
+  322  vgs
+  323  vgdisplay -v vgoracleasm
+  324  echo '4194302 / 8'
+  325  echo '4194302 / 8' | bc   bc is binary calculator for all kinds of calculations
+  326  yum install bc
+  327  echo '4194302 / 8' | bc
+  328  ls -la /dev/mapper/
+  335  ls -la /dev/mapper/ | awk '{print $9}'|egrep "vgoracleasm" | while read a ; do echo $a;echo y |lvremove /dev/mapper/$a; done
+  336  vgs
+  337  history
+  set -o vi   sets visual mode
+Dont put a file system when the dba wants them all raw disk
+drwxr-xr-x. 24 root root    4020 Oct  6 19:08 ..
+crw-------.  1 root root 10, 236 Oct  5 12:36 control
+lrwxrwxrwx.  1 root root       7 Oct  5 14:31 vggoldengate-lvgoldengate -> ../dm-2
+lrwxrwxrwx.  1 root root       7 Oct  6 18:53 vgoracleasm-lvoradata01 -> ../dm-6
+lrwxrwxrwx.  1 root root       7 Oct  6 18:53 vgoracleasm-lvoradata02 -> ../dm-7
+lrwxrwxrwx.  1 root root       7 Oct  6 18:53 vgoracleasm-lvoradata03 -> ../dm-8
+lrwxrwxrwx.  1 root root       7 Oct  6 18:53 vgoracleasm-lvoradata04 -> ../dm-9
+lrwxrwxrwx.  1 root root       8 Oct  6 18:53 vgoracleasm-lvoradata05 -> ../dm-10
+lrwxrwxrwx.  1 root root       8 Oct  6 18:53 vgoracleasm-lvoradata06 -> ../dm-11
+lrwxrwxrwx.  1 root root       8 Oct  6 18:54 vgoracleasm-lvoradata07 -> ../dm-12
+lrwxrwxrwx.  1 root root       8 Oct  6 18:54 vgoracleasm-lvoradata08 -> ../dm-13
+lrwxrwxrwx.  1 root root       7 Oct  6 17:35 vgoracle-lvoracle -> ../dm-5
+lrwxrwxrwx.  1 root root       8 Oct  6 19:08 vgorafra-lvorafra01 -> ../dm-14
+lrwxrwxrwx.  1 root root       7 Oct  5 14:49 vgswap1-lvswap1 -> ../dm-4
+lrwxrwxrwx.  1 root root       7 Oct  5 14:10 vgu01-lvu01 -> ../dm-0
+lrwxrwxrwx.  1 root root       7 Oct  5 14:14 vgu80-lvu80 -> ../dm-1
+lrwxrwxrwx.  1 root root       7 Oct  5 14:39 vgu99-lvu99 -> ../dm-3
+To merge 2 partitions you can do a vgcreate /dev/nvme12n1p1 /dev/mvme13n1p1 and it merges both partitions into 1 volume group
+
+[root@e847ba05fc4d43c dev]# df -h
+Filesystem                             Size  Used Avail Use% Mounted on
+devtmpfs                                63G     0   63G   0% /dev
+tmpfs                                   63G  4.0K   63G   1% /dev/shm
+tmpfs                                   63G   25M   63G   1% /run
+tmpfs                                   63G     0   63G   0% /sys/fs/cgroup
+/dev/nvme0n1p2                         100G   23G   78G  23% /
+/dev/mapper/vgu01-lvu01                200G  1.5G  199G   1% /u01
+/dev/mapper/vgu80-lvu80                200G  1.5G  199G   1% /u80
+/dev/mapper/vgu99-lvu99                 10G  104M  9.9G   2% /u99
+/dev/mapper/vggoldengate-lvgoldengate  4.0T   28G  3.9T   1% /u99/app/goldengate
+tmpfs                                   13G     0   13G   0% /run/user/1450202493
+/dev/mapper/vgoracle-lvoracle          100G  746M  100G   1% /u99/app/oracle
+[root@e847ba05fc4d43c dev]#
+lsblk
+Run free to see swap space
+
+
+Updating Nessus agent on Linux servers
+aws s3 cp s3://hhs-software-bucket/nessus/NessusAgent-8.2.3-es7.x86_64.rpm /var/tmp/nessus
+chmod 700 NessusAgent-8
+rpm -ivh /var/tmp/nessus/NessusAgent-8.2.3-es7.x86_64.rpm
+/opt/nessus_agent/sbin/nessuscli agent status --local    - To verify if the agnet has beenexit linked to the group
+/bin/systemctl start nessusagent.service      To start the nessus agent
+/opt/nessus_agent/sbin/nessuscli agent unlink to unlink 
+
+/opt/nessus_agent/sbin/nessuscli agent link --key=ce1bce183236fa1d8eeeb330c6bc99958d78c5152ef98a322ad89c5c15a50406 --groups="AMSOKLAHOMA-PROD-US" --host=cloud.tenable.com --port=443
+
+/opt/nessus_agent/sbin/nessuscli agent link --key=ce1bce183236fa1d8eeeb330c6bc99958d78c5152ef98a322ad89c5c15a50406 --groups="AMSOKLAHOMA-STAGE-US" --host=cloud.tenable.com --port=443
+
+rpm -e plus package name to uninstall rpm package
+rpm -qa | grep -i nessus 
+tnc 10.131.234.229 -Port 1500
+
+AMSOKLAHOMA-STAGE-US
+
+10.131.234.0/24 points to the FW with the external ip of 68.109.249.185
+Rules were built on the wrong set of firewalls
+netstat -nr
+The traffic was going over the production network and not the migration network
+
+U to undone commands in vi in Linux and cw to change word 
+
+Activation key
+V89ON-HKANA-1HJFG-VF16S-62OA6
+Agent address
+192.168.184.96
+
+SSM Agent proxy setting precedence
+When configuring proxy settings for the SSM Agent on Windows Server instances, it's important to understand these settings are evaluated and applied to the agent configuration when the SSM Agent is started. How you configure your proxy settings for a Windows Server instance can determine whether other settings might supersede your desired settings.
+
+Important
+
+SSM Agent communicates using the HTTPS protocol. For this reason, you must configure the HTTPS proxy parameter by using one of the following settings options.
+
+SSM Agent proxy settings are evaluated in the following order.
+
+AmazonSSMAgent Registry settings (HKLM:\SYSTEM\CurrentControlSet\Services\AmazonSSMAgent)
+
+System environment variables (http_proxy, https_proxy, no_proxy)
+
+LocalSystem user account environment variables (http_proxy, https_proxy, no_proxy)
+
+Internet Explorer settings (HTTP, secure, exceptions)
+
+WinHTTP proxy settings (http=, https=, bypass-list=)
+
+has context menu
+
+Auto ct to change timezone for windows servers:  ct-3g9dbtun44mal
+Auto ct to terminate instances  ct-0q0bic0ywqk6c
+
+HOW TO RUN SYSPREP ON A LINUX INSTANCE BEFORE CLONNING
+
+Copy the script below into a text file called sysprep_linux.sh on the temp instance and 
+Once saved, make permissions executable using “chmod u+x sysprep_linux.sh”, set owner
+To user root using chown:  “chown root:root sysprep_linux.sh”
+
+Then execute it on the temp instance:
+
+Cd to dir where script is located:
+
+Cd /root
+./sysprep_linux.sh
+
+It should shutdown the instance, then you can create new golden AMI from it.
+
+
+
+The sysprep script as of 20220701
+ 
+#!/usr/bin/env bash
+set -e
+ 
+function CLEAN_CLOUD_INIT() {
+    # This removes all of the cloud-init settings on the system.
+    rm -rf /var/lib/cloud/
+}
+ 
+function RESET_HOSTNAME_CTL() {
+    # This resets the hostname on Enterprise Linux 7 based operating systems.
+    logger "Setting hostname to 'ip-' via hostnamectl command"
+    hostnamectl set-hostname ip-
+}
+ 
+function RESET_HOSTNAME_LEGACY() {
+    # This resets the hostname Enterprise Linux 6 based operating systems.
+    logger "Setting hostname to 'ip-' via hostname command"
+    hostname ip-
+    logger "Recording 'ip-' in the /etc/hostname file"
+    logger ip- > /etc/hostname
+}
+function REMOVE_SYSCONFIG_HOSTNAME() {
+    # This stops the instance from using the cached sysconfig setting.
+    logger "Removing the /etc/sysconfig HOSTNAME Entry"
+    sed -i '/HOSTNAME/d' /etc/sysconfig/network
+}
+ 
+function REMOVE_INSTANCE_FROM_DOMAIN() {
+    # This is required to avoid a dirty cache on pbis causing domain join issues.
+    logger "Leaving the domain in pbis"
+    /opt/pbis/bin/domainjoin-cli leave 2>&1 | logger
+}
+ 
+function SHUTDOWN_INSTANCE() {
+    shutdown now -P
+}
+ 
+function IS_AMAZON_LINUX_1() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'amzn' ]] && [[ "$VERSION_ID" == '2018.03' ]]; then
+            logger "Detected AMAZON Linux 1"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_AMAZON_LINUX_2() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'amzn' ]] && [[ "$VERSION_ID" == '2' ]]; then
+            logger "Detected AMAZON Linux 2"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_RED_HAT_7() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'rhel' ]] && [[ "$VERSION_ID" =~ ^7.* ]]; then
+            logger "Detected RHEL 7"
+            return 0
+        fi
+    fi
+   return 1
+}
+ 
+function IS_RED_HAT_8() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'rhel' ]] && [[ "$VERSION_ID" =~ ^8.* ]]; then
+            logger "Detected RHEL 8"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_CENTOS_6() {
+     if [[ -f /etc/redhat-release ]] ; then
+        DIST=`cat /etc/redhat-release`
+        PATTERN='^CentOS release 6.*'
+        if [[ "$DIST" =~ $PATTERN ]]; then
+            logger "Detected CENTOS 6"
+            return 0
+        fi
+     fi
+     return 1
+}
+ 
+function IS_CENTOS_7() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'centos' ]] && [[ "$VERSION_ID" =~ ^7.* ]]; then
+            logger "Detected CENTOS 7"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_ORACLE_LINUX_7() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'ol' ]] && [[ "$VERSION_ID" =~ ^7.* ]]; then
+            logger "Detected ORACLE LINUX 7"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_ORACLE_LINUX_8() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'ol' ]] && [[ "$VERSION_ID" =~ ^8.* ]]; then
+            logger "Detected ORACLE LINUX 8"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_RED_HAT_6() {
+     if [[ -f /etc/redhat-release ]] ; then
+        DIST=`cat /etc/redhat-release`
+        PATTERN='^Red Hat Enterprise Linux Server release 6.*'
+        if [[ "$DIST" =~ $PATTERN ]]; then
+            logger "Detected RHEL 6"
+            return 0
+        fi
+     fi
+     return 1
+}
+ 
+function IS_SUSE_LINUX_ENTERPRISE_SERVER_12() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'sles' ]] && [[ "$VERSION_ID" =~ ^12.* ]]; then
+            logger "Detected SLES 12"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_SUSE_LINUX_ENTERPRISE_SERVER_15() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'sles' ]] && [[ "$VERSION_ID" =~ ^15.* ]]; then
+            logger "Detected SLES 15"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function IS_UBUNTU_18() {
+    if [[ -f /etc/os-release ]] ; then
+        source /etc/os-release
+        if [[ "$ID" == 'ubuntu' ]] && [[ "$VERSION_ID" =~ ^18.* ]]; then
+            logger "Detected Ubuntu 18"
+            return 0
+        fi
+    fi
+    return 1
+}
+ 
+function SET_KEY() {
+    local key=$1
+    local value=$2
+    local file=$3
+    sed -i "s/^${key} = .*/${key} = ${value}/g" $file
+    return $?
+}
+ 
+function RESET_AMS_CONFIG() {
+    local state_file="/opt/aws/ams/etc/ams.conf.d/state.ini"
+    if [[ -f ${state_file} ]] ; then
+        if SET_KEY "first_boot" "true" ${state_file}; then
+            return 0
+        fi
+        return 1
+    fi
+    return 0
+}
+ 
+function RESET_HOSTNAME() {
+    # Reset the hostname depending on the operating system.
+    if IS_AMAZON_LINUX_1; then
+        RESET_HOSTNAME_LEGACY
+        REMOVE_SYSCONFIG_HOSTNAME
+        RESET_AMS_CONFIG
+        return
+    fi
+    if IS_AMAZON_LINUX_2; then
+        RESET_HOSTNAME_CTL
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_CENTOS_7; then
+        RESET_HOSTNAME_CTL
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_RED_HAT_8; then
+        # Hostname reset to 'ip-' not required
+        # Setting 'first_boot' to 'true'
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_RED_HAT_7; then
+        RESET_HOSTNAME_CTL
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_RED_HAT_6; then
+        RESET_HOSTNAME_LEGACY
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_CENTOS_6; then
+        # Hostname reset to 'ip-' not required
+        # Setting 'first_boot' to 'true'
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_SUSE_LINUX_ENTERPRISE_SERVER_12; then
+        # Hostname reset to 'ip-' not required
+        # Setting 'first_boot' to 'true'
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_SUSE_LINUX_ENTERPRISE_SERVER_15; then
+        # Hostname reset to 'ip-' not required
+        # Setting 'first_boot' to 'true'
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_ORACLE_LINUX_7; then
+        # Hostname reset to 'ip-' not required
+        # Setting 'first_boot' to 'true'
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_ORACLE_LINUX_8; then
+        # Hostname reset to 'ip-' not required
+        # Setting 'first_boot' to 'true'
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    if IS_UBUNTU_18; then
+        # Hostname reset to 'ip-' not required
+        # Setting 'first_boot' to 'true'
+        RESET_AMS_CONFIG
+        return
+    fi
+ 
+    logger "Failed to recognize operating system, exiting."
+    exit 1
+}
+ 
+function ENSURE_USER_IS_ROOT() {
+    if [[ "$EUID" -ne 0 ]]; then
+        logger -s "This script requires root permissions. Please execute with sudo or as root user"
+        exit 1
+    fi
+}
+ 
+ENSURE_USER_IS_ROOT
+logger "Starting to configure instance for AMI creation"
+RESET_HOSTNAME
+REMOVE_INSTANCE_FROM_DOMAIN
+CLEAN_CLOUD_INIT
+logger "Successfully configured instance for AMI creation, shutting down"
+SHUTDOWN_INSTANCE
+
+ aws-azure-login --profile in-prod --mode=gui
+
+aws ec2 describe-instances --profile ok-stage --region us-east-1 --filters "Name=subnet-id, Values=subnet-06ddd655e0ea56cd0,"Name=instance-state-name, Values=running,stopped" --query "Reservations[].Instances[].[ [Tags[?Key=='SourceName'].Value][0][0],[Tags[?Key=='Name'].Value][0][0],[Tags[?Key=='aws:cloudformation:stack-name'].Value][0][0],[Tags[?Key=='Environment'].Value][0][0],InstanceId,InstanceType,LaunchTime,PrivateIpAddress,SubnetId,State.Name]" --output text > ok_ec2_instance_report.csv
+
+aws ec2 describe-instances --profile ok-stage --region us-east-1 --filters "Name=subnet-id, Values=subnet-06ddd655e0ea56cd0,"Name=instance-state-name, Values=running,stopped" --query "Reservations[].Instances[].[ [Tags[?Key=='SourceName'].Value][0][0],[Tags[?Key=='Name'].Value][0][0],[Tags[?Key=='aws:cloudformation:stack-name'].Value][0][0],[Tags[?Key=='Environment'].Value][0][0],InstanceId,InstanceType,LaunchTime,PrivateIpAddress,SubnetId,State.Name]" --output text > ok_ec2_instance_report.csv
+
+
+
+
+
+. Exit Zscaler App using this One Time Password (OTP):
+
+3^yf%iV^iaVQp5^#Ho1C4P
+
+2. Open Command Prompt as Adminn
+
+3. Uninstall ZAPPRD using "netcfg -u zs_zapprd"
+
+4. Execute cmd "pnputil -e" and find the oem name for the driver. (E.g. oem77.inf)  Driver Package Provider : Zscaler Inc. or Zscaler
+
+   Remove both
+
+5. Execute cmd "pnputil -d oem63.inf" & "pnputil -d oem114.inf"
+
+6. Reboot System
+
+7. This should block launching the Zscaler App because the service is disabled and drivers are removed and the app is uninstalled.
+
+  install latest node.js
+
+2.            open powershell as administrator
+
+3.            npm install puppeteercm
+
+4.            npm install -g aws-azure-login
+
+5.            npm install -g puppeteer
+
+ aws-azure-login --profile in-prod --mode=gui
+ 
+ shutdown -r now to shutdown a linux server
+ mount -a mounts everything 
+ 
+How to tune a kernel parameters do
+  cat /etc/sysctl.conf
+  625  free
+  626  free -k
+  627  free -m
+  628  free -g
+  629  cat /proc/sys/vm/min_free_kbytes
+  630  cp /etc/sysctl.conf backup103122_sysctl.conf
+  631  vi /etc/sysctl.conf
+  632  cat /etc/sysctl.conf | sort
+  633  vi /etc/sysctl.conf
+  634  cat /etc/sysctl.conf | egrep -v "^#"
+  635  cat /etc/sysctl.conf | egrep -v "^#" | sort
+  636  vi /etc/sysctl.conf
+  637  clear
+  638  sysctl -p
+  639  free
+  640  history
+
+to set for oracle soft and nofile do 
+ cd security/
+  367  vi limits.conf
+  368  cp limits.conf backup103122_limits.conf
+  369  vi limits.conf
+  370  history
+shutdown
+shift plus g to go to the bottom of the page in vi mode
+log back in to the server and run dmesg to get the messages the kernel displayed since boot
+
+yum list installed | awk '{print $1"@"$2}' | sort > pkg-20221102.txt
+
+
+Then perform your compare using diff command and create output results file:
+
+diff -y okprdldboracle2-pkg-20221102.txt okstgldboracle-pkg-20221102.txt > diff-pkg.txt
+
+Parse the output file by grabbing second column:
+
+egrep ">" diff-pkg.txt | awk '{print $2}'
+s3-ok-prod-to-stage
+s3-ok-stage-to-prod
+
+aws sts get-caller-identity
+
+PIVOT TABLE ON EXCEL study them
+=XLOOKUP(P6,$A$5:$A$104,$A$5:$A$104,"N/A")
+To sort ensure that you select the columns you want sorted then select the drop down menu for sort and sort by custom. From then select the first column and add a level on the top left hand bar and add the second column and then hit enter. 
