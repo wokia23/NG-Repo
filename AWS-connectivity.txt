@@ -1,0 +1,118 @@
+
+AWS Connectivity  - Oklahoma
+
+Contents
+Introduction	2
+Accessing the AWS Oklahoma Staging Environment	3
+Account Locked	3
+Bastion Hosts	3
+RDP connections (for Application Administrators on Windows servers)	4
+SSH Connections (for Linux servers and SSH tunneling)	5
+Bastion server log on	5
+Linux server log on	7
+SSH Tunneling to AWS OK Staging Servers	8
+Connecting to Linux server via SSH tunnel	8
+Connecting to Windows server using RDP via SSH Tunnel	12
+
+
+ 
+Introduction
+This document will outline the steps currently required to set-up an Oklahoma Title XIX application team member with access to the servers in the AWS Oklahoma Staging (non-production) environment.  
+The following high-level steps will happen:
+1.	Team member will need an ID in the EDSDOMOKIXX domain. edsdomokxix\janschrx
+2.	An AWS Request for Change (RFC) must be submitted that will grant user ID access to AWS EC2 instance(s) in the Oklahoma Staging environment.  Access granted will be with either admin or non-admin privilege.
+3.	From a workstation connected to the OKXIX network (either from the OKC office or connected with the Oklahoma VPN) the team member will be able to connect to the AWS Oklahoma Staging environment bastion servers.  From the bastion servers, the team member will be able jump to the authorized OK Staging AWS server(s) such as the Oklahoma Test Linux Application batch server or application Windows Servers.
+
+ 
+Accessing the AWS Oklahoma Staging Environment
+As noted at the beginning of this document, connectivity to the AWS Oklahoma will require that the team member first connect to the bastion servers.  Connectivity to the Bastion host and servers will require an RFC be submitted on your behalf to grant access for a stated period of time (up to 12 hours). 
+To facilitate application team members having access to the AWS servers, AWS scripts will be set up and run to grant access to the OK team members each week.  If you are getting a “not authorized for remote login” message, reach out to Bill Stamp/Ray Baker who will be running those scripts to ensure your ID is in the list for access to the authorized server and that authorizations have not expired.
+Account Locked
+These accounts will reset after an hour. If you have a more urgent need than waiting one hour, you would probably need to contact the OK Security team who can open a ticket for you.  But probably the process would take longer than an hour.
+Expired (=>60 days) OKXIX VPN/LAN/Unix/Oracle/DB/Active Directory Password Resets and Unlocks are supported by sending an email to Jesus Vicente Jr \ Ronnie Chavez
+Bastion Hosts
+To log into an OK XIX server in the AWS Oklahoma Staging environment, you will have to first connect into the AWS Oklahoma Staging environment via a bastion host.  A bastion host is a server whose purpose is to provide access to a private network from an external network.  Once remote connectivity has been established with the bastion host, it then acts as a “jump” server, allowing you to use SSH or RDP to log into other VM instances within the AWS Oklahoma Staging environment.
+There are four bastion hosts currently configured for the AWS Oklahoma Staging environment.  Two for use with RDP and two for use with SSH.   When logging into the bastion server from the Oklahoma network, use the FQDN to connect to the bastion hosts as the IP address do change as a result of AWS/AMS updates.  
+AWS Oklahoma Staging (TEST, MODEL OFFICE, UAT/ITF)
+FQDNs	Bastion Server Type
+sshbastion1.a990681078292.amazonaws.com	SSH Bastion Server (Linux)
+sshbastion2.a990681078292.amazonaws.com	SSH Bastion Server (Linux)
+	
+rdpbastion1.a990681078292.amazonaws.com	RDP Bastion Server (Windows)
+rdpbastion2.a990681078292.amazonaws.com 	RDP Bastion Server (Windows)
+
+NOTE!  NOTE!  NOTE!
+Eventually, when the Oklahoma Production environment is built out, you will need to connect to a separate set of bastion servers to access Oklahoma Production servers.  The following bastion servers are to access AWS Production servers only.  For Staging servers, use the Bastion servers listed above.
+AWS Oklahoma Production
+FQDNs	Bastion Server Type
+sshbastion1.a112394763914.amazonaws.com	SSH Bastion Server (Linux)
+sshbastion1.a112394763914.amazonaws.com	SSH Bastion Server (Linux)
+	
+okmodwappesb.stg.okxix.com	RDP Bastion Server (Windows)
+rpdbastion2.a112394763914.amazonaws.com	RDP Bastion Server (Windows)
+RDP connections (for Application Administrators on Windows servers)
+Your Windows workstation should include Microsoft Remote Desktop Connection so you can use RDP to connect to one of the above two RDP servers.  When logging into the RDP server, you will need to specify both the EDSDOMOKXIX domain and your associated user ID (first time usage may default to another domain) as shown in the example below.
+ 
+The two RDP bastion servers (Windows Server 2019) only allow for two concurrent connections each.  To work around that limitation, it is recommended team members set-up SSH bastion connections and configure SSH tunnels to access their Windows servers.  Refer to the SSH Tunneling to AWS OK Staging Servers section for additional details.
+
+If your RDP connection to the bastion host fails with the following message and you have confirmed you specified the EDSDOMOKXIX domain with your valid credentials, it is likely an RFC must be submitted to grant access to your ID to an OK Windows server (and then by default, the bastion host).
+2 
+Once you have RDP’d to the bastion host, you then launch Remote Desktop Connection (mstsc) and connect to your targeted Windows Server, again using your EDSDOMOKXIX domain and ID.  It is recommended you use the FQDN of the targeted server but using the AWS IP address is also an option.
+ 
+For security reasons and due to the limited number of RDP sessions currently available via the RDP bastion servers, it is important to remember to log off from the OK server and OK bastion RDP server.  For the bastion RDP server, when you click with Windows Start button (in lower left corner), it will show the power button just above it with an option to Disconnect.
+ 
+SSH Connections (for Linux servers and SSH tunneling)
+Listed in the above list of Bastion servers are two Linux servers that will support your SSH connectivity needs for logging into any OK Linux server or to utilize the ability to use the SSH tunnel feature to directly RDP to Windows servers.   The examples shown below assume user has PuTTY installed to their workstation but other SSH client tools would be similarly configured.
+Bastion server log on
+As noted earlier in the Bastion Hosts section, it is recommended that you use one of the SSH Bastion FQDN’s and not the IP address as the IP addresses will occasionally change without notice.
+ 
+1.	When you log into the Bastion SSH server, specify both your ID and the EDSDOMOKXIX domain.  
+
+Log in with your EDSDOMOKXIX ID and password (e.g. edsdomokxix\stampbx or alternative format, stampbx@edsdomokxix.eds.com).  Note: In your Putty session, under the Connection/Data section, you can fill in the ‘auto-login username” with your edsdomokxix\{userid}.  This will populate the ‘login as’ on the Linux window.
+ 
+NOTE:  Should you get an “Access denied” message logging into the SSH Bastion server with valid EDSDOMOKXIX domain credentials, it may be an indication that an AWS RFC request is needed to grant you access to your target server.  Contact Bill Stamp or Ray Baker.
+As noted earlier, the bastions servers are rebuilt occasionally due to server upgrades, security patching, etc.  When that occurs, the bastion server will have a new IP address and a new host key.  As a result, you may get a warning page similar to the following when the SSH bastion server has a new host key.  You will need to Accept the new host key to store on your workstation.
+  
+
+Linux server log on
+2.	Once you are logged into the SSH bastion server, from the unix prompt on the bastion server, ssh to the IP/FDQN of the targeted OK Linux server.  Since SSH defaults to using the user ID you are currently logged in with, you should not have to specify your Domain\UserId again, only your EDSDOMOKXIX domain password.  
+  
+SSH Tunneling to AWS OK Staging Servers
+Interactive access to AWS servers is limited to only connecting to the Bastion servers.  As such, using desktop tools such as PuTTY and Remote Desktop Connection to directly connect to the targeted AWS server is not allowed.  To address this limitation, you can create SSH tunnels using a PuTTY session connected to the SSH Bastion server to then connect to the target server/port.  Then your desktop tool can connect to that server by way of the SSH tunnel.
+Connecting to Linux server via SSH tunnel
+ From within the PuTTY configuration, select the previously configured SSH Bastion session and select Load.  
+ 
+
+In the left navigation, under Connections ->  expand SSH -> and select the Tunnels tab.  
+In the Source Port box, you will specify a unique port number (cannot be a port number already used on the localhost machine and in the range of 1025-65535).  
+Within the Destination box, you will specify the target server and target port number.  The target port number should reflect the port number you would use if connecting directly to the server.  For example, for Linux SSH/SFTP connections, specify port 22.  
+Then click the “Add” button as shown in the image below.   
+After you click Add button, the entry you added should now be in the list box of Forwarded ports as shown in the image below.
+ 	
+For the session you are adding tunnels to, be sure to Save the session after adding the tunnels.  Click on Session category and click Save button (session you were adding the tunnels to should already be listed in the Saved Sessions box).
+ 
+Once your Bastion server configuration is complete with an SSH tunnel to a Linux, log into the SSH bastion server.  
+Note:  This session will timeout after 15 minutes of inactivity (ssh tunnel activity won’t count).  If you have an active SSH tunnel session, it will remain connected.  However, if you want to subsequently open new tunnel sessions, you will have to create new bastion session.  One workaround would be to use the sleep command to stay active for an extended period of time.
+ 
+Then from your workstation, launch another PuTTY session that will leverage the tunnel.  In the connection parameters, you will specify “localhost” along with the unique port number you specified for the tunnel to the target server.  Save the PuTTY session with a descriptive name then click Open to connect directly to the target server via that tunnel.
+ 
+When you connect to this localhost session with the PuTTY, it will take you directly to the targeted server for the authentication process.
+ 
+PuTTY tips:
+Go to category Connection/Data – and enter your edsdomokxix\userid to pre-populate your Login when the Linux box opens. 
+Go to category Window/Colours to change the ‘Default Foreground’ (i.e. text) color or the Default Background on a session to be unique from your other UNIX/Linux sessions.  This is an easy way to keep track, visually, of which box you are on because the box is not obvious in the frame/title of the opened session.  It is a good way to know whether your PuTTY session is connected to the Bastion Server or the ultimate AWS server you are doing your work on.
+  
+Connecting to Windows server using RDP via SSH Tunnel
+The following is another example of using an SSH tunnel to RDP to a Windows server.  
+In the example below, the target OK/AWS server is listed in the Destination box along with the port number used by RDP (ok-tst-w-appsoa-001.edsdomokxix.eds.com:3389).  
+A unique Source port is specified to use on the workstation (in this example 13389 was used as part of the set-up to connect to multiple Windows servers via RDP using unique port numbers.  Again, the Source port # can be whatever you want as long as it is not already used on your workstation, has not already been configured as SSH tunnel port number for another AWS server, and is in the range of 1025 to 65535.
+   
+
+In the example below, once a PuTTY session was established to the SSH Bastion Server with the configured SSH tunnel for the targeted Windows server, a Remote Desktop Connection will use the SSH tunnel to connect to the target AWS server using the port number that was specified in the above PuTTY SSH tunnel configuration.  
+As with the earlier example, be sure you have connected your PuTTY session that has the SSH tunnel to the SSH Bastion server before attempting to make the Remote Desktop Connection.
+ 
+If you have many AWS Windows servers to access, you may fwant to use Remote Desktop Connection Manager, mRemoteNG, or a similar product to configure and save entries that will correlate to the different tunnels with their unique port numbers created in PuTTY.  In the example below, not only were settings created to access the RDP bastion servers in Remote Desktop Connection Manager, but also some AWS Windows servers using the SSH tunnel local port numbers:
+ 
+
+For additional information on using PuTTY to create and use SSH tunnels, many articles can be found on the web via Google.
+
