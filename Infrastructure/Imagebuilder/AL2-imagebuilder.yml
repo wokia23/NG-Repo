@@ -286,5 +286,3 @@ rEC2ImageBuilderRecipe:
           VolumeSize: '25'
           VolumeType: 'gp3'
         NoDevice: ""
-
-Outputs:
