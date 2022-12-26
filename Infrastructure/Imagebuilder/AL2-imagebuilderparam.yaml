@@ -21,54 +21,70 @@ pAwsAccountLc:
 pSubnetID:
   Description: Subnet for EC2 instance build
   Type: String
+  Default: subnet-37ff9851
 
 pInstanceType:
   Description: Server instance type
   Type: String
+  Default: t3.medium
+  
   
 pVersion:
   Description:  Pipeline version number
   Type: String
-  
+  Default: 0.0.1
+
 pDistribution:
   Description: AMI OS distribution
   Type: String
+  Default: Amazon Linux 2022
   
 pDescription:
   Description: Description of the type of service
   Type: String
+  Default: EC2 image builder to create AMI for Amazon Linux 2022
   
 pKeyPair:
   Description: Key pair to create server
   Type: String
+  Default: gainwellkeypair.pem
 
 pWorkingDirectory:
   Description: Working directory for server
   Type: String
+  Default: /root/ec2builder
 
 pImageName:
   Description: AMI image Name
   Type: String
+  Default: BK-amazon-linux2022
 
 pParentImageID:
   Description: AMI image ID from console
   Type: String
+  Default: ami-0b851c6e419f53bf5
 
 pLogGroup:
   Description: Log group for the server
   Type: String
+  Default: /aws/imagebuilder/ImageBuilderAL2022
   
 pKMSKey:
   Description: KMS key for server build
   Type: String
+  Default: Packer-kms-key
 
 pAnsiblePlaybook:
   Description: 
   Type: String
+  Default: setup.yml
 
 pSnsSubscription:
   Description: 
   Type: String
+  Default: SSM-SSN-Topic
+  
+  
 Mappings: 
 
 Conditions: 
@@ -110,7 +126,7 @@ rEC2ImageBuilderInstanceProfile:
   Properties: 
     Path: /EC2ImageBuilder/
     Roles: 
-      - Ref: rEC2ImageBuilderInstanceRole:
+      - Ref: rEC2ImageBuilderInstanceRole
 
 # https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html
 rEC2ImageBuilderInstanceRoleLoggingPolicy:
@@ -120,7 +136,7 @@ rEC2ImageBuilderInstanceRoleLoggingPolicy:
   Properties: 
     PolicyName: ImageBuilderLogBucketPolicy
     Roles: 
-      - Ref: rEC2ImageBuilderInstanceRole:
+      - Ref: rEC2ImageBuilderInstanceRole
     PolicyDocument:
       version: '2012-10-17'
       Statement:
