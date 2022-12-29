@@ -608,7 +608,7 @@ Role to Install Tomcat:
         yum:  
           name: "{{req_java}}"
           state: present 
-      - name: Setting default java 
+      - name: Setting default java  y
         alternatives: 
           name: java 
           link: /usr/bin/java 
