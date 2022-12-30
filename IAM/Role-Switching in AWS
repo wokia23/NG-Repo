@@ -1,0 +1,25 @@
+What is cross account access                                                                                     
+	- ShiloIT has admin access in my main account. 
+	- I want ShilohIT to be able to switch roles between the PROD and main account
+	- To do so you have to complete the following pre-requisites:
+	- Create a user in the trusted account
+	- Create an IAM Role in the PROD account with full access. Edit the trust relationship for the role and this entry below except for the arn which should be the arn for the trusted account.
+	{
+	    "Version": "2012-10-17",
+	    "Statement": [
+	        {
+	            "Effect": "Allow",
+	            "Principal": {
+	                "AWS": "arn:aws:iam::485147667400:root"
+	            },
+	            "Action": "sts:AssumeRole",
+	            "Condition": {}
+	        }
+	    ]
+	}
+	- 
+	- Move to trusted account and create a custom policy name crossaccount-policy with service sts ( Security Token service)
+	- Allow the above role from Prod account to assume role by adding ARN role
+	- Assign crossaccount policy to the user
+	- Now verify the switch role
+	- aacc
