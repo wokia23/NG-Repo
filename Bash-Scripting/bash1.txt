@@ -74,4 +74,5 @@ What are variables in Linux:
 	- The read pin command in Linux allows the user to dynamically enter a pin
 	- The read command in this case allows the user to be able to enter a value for the system
 	- The pin in this case is a dynamic variable
+    
 
