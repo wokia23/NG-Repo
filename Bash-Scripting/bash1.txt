@@ -1,1 +1,77 @@
-This is a bash scripting file
+Computer has 2 components:
+Bare Metal or Hard Ware:
+	- RAM: Memory
+	- CPU:
+	- ROM: hard disk
+	- MOUSE
+	- Keyboard: 
+Software components:
+	- Operating system: OS like windows, Linux, MacOS etc
+Other software's:
+	- Shell
+	- Sublime
+	- Microsoft word/Excel: 
+	- These are other software's that you can install. 
+	- If you want to run tasks on your computer you have to either use the GUI (graphical user interface) or the CLI (Command line interface) using a shell. 
+	- A server is a super computer that does multiple things
+
+WHAT IS A SHELL SCRIPT
+	- A shell script is a collection of commands in a file
+	- A shell is an interpreter
+	- A shell is a program that takes command from the keyboard and gives them to the operating system to perform
+	- On most Linux systems a program called bash ( which stands for Bourne Again Shell, an enhanced version of the original Unix shell program, sh) acts as the shell program. Besides bourne shell, there are other shell programs that can be installed in a Linux system. These include Korn Shell, Boune shell (bash) and C shell. 
+	- To see the shells that you have in your system you run cat /etc/shells
+	ec2-user@ip-172-31-77-155 ~]$ cat /etc/shells
+	/bin/sh
+	/bin/bash
+	/usr/bin/sh
+	/usr/bin/bash
+	- The above output tells me that I have sh which is the bourne shell and bash which is the bourne again shell. 
+	- The command echo $SHELL tells you which shell will be interpreting your commands 
+Naming convention:
+	- The shell script is recommended to end in .sh or .sc example will be deploy.sh
+	- The shell script ALWAYS start with #!/bin/sh or #!/bin/bash
+	- You can also do the above with usr/bin
+
+How to run a shell script
+	- ./script name
+	- Example is ./deploy.sh
+	- If you run the shell script without giving the script any permissions you get a permission deny. So the above command will give a permission denied because the file does not have executable permissions. 
+	- To assign permissions to a file we use the chmod command. Which is chmod +x scriptname
+	- +x means add executable permissions. +r means add read permissions and +w means add write permissions. 
+	- After running the executable permissions the color of the file changes color.
+	- To get the date in a shell script the date has to be inputted as `date`. This provides you with the date of that particular day
+	- For a command to run as a command in shell scripting the command has to be run in back tic as seen above with the date command.``
+	- To remove the executable permissions in a file you run the command chmod -x filename
+	- We can also run a file without executable permissions
+	- You can also run a script without the #! Option. However, it is best practice to run it with that option
+	- To run a script without executable permissions simply run as sh filename or bash filename
+	- This is because these are the interpreters
+	- You can install other interpreters such as c shell and k shell by running sudo yum install csh or sudo yum install ksh
+	- Then to see what shells are running you run cat /etc/shells
+
+What are comments:
+	- Metadata is data about data
+	- Explains what the script is achieving and used to explain the script file
+	- Single line comment vs multi line comment
+	- The comments have to start with #
+	- Multi line comments in shell starts with <<mlc and ends with mlc wher mlc is a variable that can be changed based on the user
+	- Sudo yum list installed to find the packages installed and sudo yum search packagename to find package names you are trying to install. For example sudo yum search awscl* to find packages for the awscli to install
+	- The multi-line comment prevents you from inputting the # sign multiple times.
+	- You are able to run scripts providing the absolute path as well if the script is being run from a different location
+
+What are variables in Linux:
+	- Company = LandmarkTechnology
+	- Echo $Company
+	- The dollar sign in front of company tells me that company is a variable
+	- We will create a variable file called var.sh which is a variable file
+	- When it comes to variables we have system defined variables and user defined variables
+	- In the above example PWD is a system defined variable and the other variables like name and company are user defined variables
+	- Env helps list all your environmental variables
+	- All system variables are in caps so it is not recommended for user variables to be in caps as well. This is to avoid a conflict with any system variables available with the same name
+	- To refresh a variable file you run source plus variable file
+	- This updates the file after any changes are made
+	- The read pin command in Linux allows the user to dynamically enter a pin
+	- The read command in this case allows the user to be able to enter a value for the system
+	- The pin in this case is a dynamic variable
+
