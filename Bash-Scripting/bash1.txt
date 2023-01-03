@@ -75,4 +75,83 @@ What are variables in Linux:
 	- The read command in this case allows the user to be able to enter a value for the system
 	- The pin in this case is a dynamic variable
     
+Bash scripting class 3
+	- Helping clients to transition from manual operations to automation
+	- Rather than running individual commands we will put them in a file to automate the process
+	- The echo can be run with or without the quotes
+	- To run a dynamic variable we are going to use the read command
+	- Scripting is very important for automation
+	- The read command helps to obtain dynamic variables
+	- Writing variables like the one in whatsapp.sh is called hard coding which is not recommended in software development
+	[ec2-user@ip-172-31-77-155 ~]$ cat whatsapp.sh
+	#!/bin/bash
+	firstname=brigthain
+	lastname=kargong
+	echo "Thanks $firstname $lastname for installing whatsapp"
+	echo "Please enter your phone number to receive your pin"
+	read number
+	echo "confirm if this $number is correct"
+	read
+	- First and last name above have been hard coded
+	- We had a meeting with the team to avoid hard coding
+	- Always try to make use of comments when writing scripts in your environment
+	- The script below helps create a user account in your environment
+	!/bin/bash
+	#You need to be root or have sudo access to execute this script
+	#This script will create a new user's account in a linux server
+	echo "Please enter the userName for the account you want to create!"
+	read userName
+	echo "The name you entered is: $userName"
+	sudo useradd $userName
+	echo "$userName user account created successfully"
+	echo "Set the password for $userName"
+	sudo passwd $userName
+	- The | command acts as a temporary storage and grep will only extract the word you provide
+	- Read -s allows you to provide any information as a secret
+	[ec2-user@ip-172-31-77-155 ~]$ cat read-user2.sh
+	
+	#!/bin/sh
+	#You need to be root or have sudo access to execute this script
+	echo -n "Enter the username: "
+	read username
+	echo -n "Enter the password:"
+	read -s password
+	sudo adduser "$username"
+	echo "$password" | sudo passwd "$username" --stdin
+	tail -7 /etc/passwd
+	<<ST
+	    stdin: This option is used to indicate that the passwd should read the new password from standard input, which can be a pipe.
+	you can cat /etc/passwd to verify
+	ST
+	- https://www.howtogeek.com/435903/what-are-stdin-stdout-and-stderr-on-linux/
+	- View link above to lear about stdin, stdout,stderror
+	- Python scripts end in .py
+	- Echo is to bash shell scripting as print is to python
+	- Multi line code for python looks like '' and ''
+	- To run a command in python type print('Input phrase here')
+	#!/bin/sh
+	#You need to be root or have sudo access to execute this script
+	#This script also adds the user to the sudoers file for root privilges
+	echo -n "Enter the username: "
+	read username
+	echo -n "Enter the password:"
+	read -s password
+	sudo adduser "$username"
+	echo "$password" | sudo passwd "$username" --stdin
+	echo "$username  ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$username
+	tail -7 /etc/passwd
+	<<ST
+	    stdin: This option is used to indicate that the passwd should read the new password from standard input, which can be a pipe.
+	you can cat /etc/passwd to verify
+	ST
+	
+	Number and String variables
+	- An example of a string variable is str1="My name is Brigthain kargong and I work for gainwelltechnologies"
+	- Most string variables should either be in single or double quotes
+	- Number variable is num=5
+	- The expression command in Linux lets you output values on your CLI
+	- For instance expr 4+5 gives you 9
+	- Or we can also use variables in bash shell scripting to create your own calculator
+	
+
 
