@@ -152,6 +152,32 @@ Bash scripting class 3
 	- The expression command in Linux lets you output values on your CLI
 	- For instance expr 4+5 gives you 9
 	- Or we can also use variables in bash shell scripting to create your own calculator
-	
+		#!/bin/bash
+	echo "Please enter the first number"
+	read num1
+	echo "Please enter the second number"
+	read num2
+	echo "The sum is"
+	expr $num1 + num2
+	echo "The difference is `expr $num1 - $num2`
+	echo "The product is `expr $num1 \* $num2`
+	- The backtick is used here so that that portion will be run as a command
+
+Command line arguments:
+	- These are very important in bash shell scripting. These tell you what is happening when you run a script
+	- The command line arguments to make note of are
+	- Echo '$#:' -> number of arguments
+	- , echo '$$:',-> a process ID
+	-  echo '$0:',-> ScriptName
+	-  echo '$*:', : Display all arguments
+	- echo '$@:',: Display all the arguments
+	-  echo '$?:': Status of the last run command
+	- Any command you run in Linux created a process ID. 
+	- Arg1 is the first argument. If you run the command cla.sh arg1 db app lb. The arg1 db app and lb in this case are all the arguments and app is the 3rd argument
+	- Echo $?: has value either 0 or 1-127
+	- Echo $?: 0 means you are good to go. If its nor zero it means there's a problem
+	- For echo $? You get an error of 127 when there's a command not found error and value of 1 when there's a no such file or directory
+	- This basically gives us the status of the last run command. If the comma d was fine the value will be a zero and if it was an error it will have a value ranging from 1-127
+
 
 
