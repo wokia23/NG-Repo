@@ -178,6 +178,114 @@ Command line arguments:
 	- Echo $?: 0 means you are good to go. If its nor zero it means there's a problem
 	- For echo $? You get an error of 127 when there's a command not found error and value of 1 when there's a no such file or directory
 	- This basically gives us the status of the last run command. If the comma d was fine the value will be a zero and if it was an error it will have a value ranging from 1-127
+#!/bin/bash
+#if (( $# >=3 ))
+#if [ $# -gt 3 ]
+#if [ $# -lt 3 ]
+if (( $# == 3 ))
+then
+#Number of arguments on the command line
+echo '$#:' $#
+#Process number of the current process
+echo '$$:' $$
+#Display the 3rd argument on the command line
+echo '$3:' $3
+#Display the 10th argument on the command line
+echo '${10}:' ${10}
+#Display the name of the current shell
+echo '$0:' $0
+#Display all the arguments on the command line
+echo '$*:' $*
+#Display all the arguments on the command line
+echo '$@:' $@
+date
+echo '$?:' $?
+else
+echo "Please pass the 3 command line arguments along with the script. Thanks"
+
+Class 5
+	#!/bin/bash
+	sum=`expr $1 + $2`
+	echo $sum
+	echo "$1+$2=`expr $1 + $2`"
+	#Run the above script as follows
+	- To run multiplication you run expr 3 \*2
+	- The above script expects you to pass 2 arguments for the number variables cause the variables were not specified at run time
+	- $1 is the first argument while $2 is the second argument
+	- The debugging mode in bash shell script helps you find out if there are any issues in the script. It breaks each part of the command letting you if there are any errors in the script
+	- You can use either -v or -x to run the script in debugging mode
+	
+	Input output redirection
+	- For standard output redirect an example is getting the output from the command tail -5 /etc/passwd > new-users.
+	- Here the output from the passwd file will be outputted in the new-users file
+	- 2> redirect standard error
+	- 1> redirect standard output
+	- 2>&1 redirect standard error to standard output
+	- So using > is redirecting the output in your file to another specified file (Here the content in the redirected file is completed replaced with the output content from the first file
+	- To append a file you use >>  so it adds content to the already existing file
+	- Example is tail -5 /etc/passwd >> new-users
+	- Interview question? What's the difference between redirect and append? Redirect replaces the content in the file while append adds content to the file.
+	- To get the standard error you can run the command as sh error.sh > log.txt 2> error.txt
+	- In the above command no information will be shown on the cli and all the output will be outputted to the log.txt and all errors will be outputted to the error.txt
+	- Standard practice is that the content will be redirected into 1 file
+	- To have both the errors and the standard output in one file you run the command as such sh error.sh > logging 2>&1 and both the errors and output will all be in one file
+	- The tee command pushes the output to another file
+
+Class 6
+Conditions:
+	- -eq Equals to ==  ex to say equals to b then you write a -eq b or a ==b
+	- -ne is not equals to or != so a!=b or a -ne b
+	- -gt is greater than so a>b or 3>2
+	- -lt <  is less than 2<3 or a -lt b
+	- -ge >= greater or equals to 4>=3
+	- -le <= less than or equals to 3<=2
+	- The conditions script always ends with fi. Always remember that
+	!/bin/bash
+	mypin=1986
+	echo "Please enter your pin number"
+	read pin
+	if [ $pin == $mypin ]
+	then
+	echo "The pin you entered is correct please select your account number"
+	else
+	echo "You entered the wrong pin. You have 3 more tries before your account is locked. Thank you"
+	fi
+	- The above condition script asks the client to enter their password and if the wrong password is entered then the else statement is displayed
+	- The if condition can either be written like if [ $var1 == $var2 ] or if (( $var1 == $var2 ))
+	- Conditions3.sh
+	firstname=brigthain
+	lastname=kargong
+	mypet=bingo
+	echo "Please enter your petname"
+	read petname
+	if [ $mypet == $petname ]
+	then
+	echo "You entered the correct response. please proceed to the next question"
+	else
+	echo "That was the wrong answer.Please try again"
+	fi
+	echo "Please enter your first name"
+	read Firstname
+	if [ $Firstname == $firstname ]
+	then
+	echo "You entered the correct response. Please proceed to the next question"
+	else
+	echo "That was the wrong answer. Please try again"
+	fi
+	echo "Please enter your last name"
+	read Lastname
+	if [ $Lastname == $lastname ]
+	then
+	echo "You entered the correct response. Please proceed to the next question"
+	else
+	echo "That was the wrong response. Please try again"
+	fi
+	echo "Thank you for choosing Myworld.com for your services. We appreciate your support"
+	- For each condition you have to close it with an fi. So if you have 3 ifs you must have 3 fi. 
+	- Elif is another type of condition that is used to counter an earlier condition. For instance if the condition states. If the variable is greater than 10 then echo "" elif if the  variable is equal to 10 then echo ""
+	- Elif is used to add additional conditions in a script
+	
+	
 
 
 
