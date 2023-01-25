@@ -25,14 +25,36 @@ echo "$username  ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$username
 sudo yum update -y 
 echo "Update complete"
 #This part of the script will install awscl2 for this server
-sudo yum install awscli-2.noarch -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
 echo "awscli-2 has succesfully been installed in your server"
-#This part of the script will install wget
+#This part of the script will install wget 
 sudo yum install wget -y 
 echo "wget has succesfully been installed in your server"
+#This command will install tree
+sudo yum install tree -y
 #This part of the script will install docker
-sudo yum install docker.x86_64 -y 
+sudo yum install docker -y 
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
 echo "Docker has succesfully been installed in your server"
+echo "This command will install ansible for specified OS"
+sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum install -y ansible
+sudo yum -y install unzip
+# elif [ cat /etc/system-release|grep -i "Amazon Linux AMI" ]
+# then
+# sudo pip install ansible --upgrade
+# sudo yum -y install unzip
+#  elif [ cat /etc/system-release|grep -i "Red Hat Enterprise Linux" ]
+#  then 
+#  sudo yum -y install python3-pip
+#  sudo pip3 install ansible
+#  sudo yum -y install unzip
+#  else
+#  echo "you have not selected one of the reccomended OS"
+#  fi
 #This part of the script will install python3
 sudo yum -y groupinstall "Development Tools"
 sudo yum -y install gcc devel libffi-devel openssl11 openssl11-devel
@@ -44,4 +66,9 @@ sudo ./configure
 sudo make
 sudo make altinstall
 echo "Python3 installation complete"
-echo "You are now set for work. Thank you for choosing BK tech"
+# Please store all temporary files that you will not need in this directory
+mkdir -p /tmp/storage/
+chown ec2-user:ec2-user /tmp/storage
+echo "Your temporary directory has been created. This directory will be deleted during the next script run"
+# This command will delete all files in the /tmp/storage directory
+rm -rf /tmp/storage/*

@@ -284,7 +284,168 @@ Conditions:
 	- For each condition you have to close it with an fi. So if you have 3 ifs you must have 3 fi. 
 	- Elif is another type of condition that is used to counter an earlier condition. For instance if the condition states. If the variable is greater than 10 then echo "" elif if the  variable is equal to 10 then echo ""
 	- Elif is used to add additional conditions in a script
+		#!/bin/bash
+	echo -n "Enter the first number"
+	read var1
+	echo "Enter the second number"
+	read var2
+	echo "Enter the third number"
+	read var3
+	if [ $var1 -ge $var2 ] && [ $var1 -ge $var3 ]
+	then
+	echo "$var1 is the largest number"
+	elif [ $var2 -ge $var1 ] && [ $var2 -ge $var3 ]
+	then
+	echo "$var2 is the largest number"
+	elif [ $var2 -eq $var1 ] && [ $var2 -eq $var3 ]
+	then
+	echo "The variables are equal"
+	else
+	echo "$var3 is the largest number"
+	fi
 	
+LOOPS:
+	- This is used for repetition or repetitive tasks
+For loops:
+	- The syntax for for loops starts with the word for
+	- So it looks like for expression, do and done
+	- So to pass an expression with 5 variables such as 1,2,3,4,5
+	- You run for I in 1 2 3 4 5
+	- Do
+	- Echo $i
+	- So the above command gets the script to go back in the loop and keep looking for the value of I until there is no more value
+	- So it will do for I in 1 2 3 4 etc until it gets to the last value
+	- The key words for forloop is for, in , do and done
+	- To define a range that has a high number or letter count you cant input all the values do you can run it in the following way
+	- For I in {1..20} where the range is from 1 to 20
+	- To execute the variables in steps of say 5 you can run the loop like this for I in {1..20..5}. In this case you are telling the script to run in ranges of 5
+	!/bin/bash
+	echo "For loops start.."
+	#for i in 1 2 3 4 5
+	#i=90
+	for (( i=90; i<=100; i++ ))
+	do
+	echo $i
+	done
+	echo "loop is done"
+
+	#!/bin/bash
+	for i in {0..20..5}
+	do
+	echo $i
+	done
+	- For the above script the loop says for i=90, the loop needs to run until I is less than 100. 
+	- i++ means that the value of I will keep increase by 1
+	- So for i=1 it will be according to the formular i+1=1+1=2
+	- Next value will be 2+1=3 and so on
+While-loops
+	- In this case the key words are while do and done
+	#!/bin/bash
+	echo "While demo loop
+	i=1
+	while [ $i -le 5 ]
+	do
+	echo $i
+	i=`expr $i + 1`
+	done
+	echo "While loop is over"
+	- In the above script the value of i=1 and we are saying that while i=1 and less than 5 run the math equation $i+1
+	
+Switch cases:
+	- What is a switch case in batch shell scripting? 
+	- Most commands you see in Linux are switch cases
+	- A command is a program is a script or an executable file
+	- Commands are generally found in the bin and sbin directory
+	- Switch cases start with application state. i.e. start, stop, restart, state, enable
+	#!/bin/bash
+	case $i in
+	start)
+	echo 'myapp starting'
+	echo 'myapp started';;
+	stop)
+	echo 'myapp stopping'
+	echo 'myapp stopped';;
+	restart)
+	echo 'myapp restaring'
+	echo 'myapp restarted';;
+	*)
+	echo 'sorry unknown option'
+	echo 'please enter start|stop|restart';;
+	esac
+	#systemctl start httpd
+	#service sshd start
+	#we use openssh to connect to our linux
+	#server = ssh port+22, ssh client, hostname/IP username
+	#ssh privatekey or password
+	- The systemctl start https is an example of a switch case that starts the software
+	- Always remember to put the ;; after the second variable before the choice. Choices in the above script are star, stop or restart
+	- The *) in this case states that the script should deny any other option that is not one of the above
+	- The switch cases always start with case $variable in and end with esac
+	- Esac is the opposite of esac.
+	- Key word for switch cases are case in and esac
+Functions:
+	- What are functions in bash scripting?
+	- Greet function
+	- They are used to reduce lines of codes by calling them
+	- To  create a function the key word is the user name
+	- For instance the create user function can help us create a user
+	- In this case the function will look like this
+Create-user() 
+{
+	#This function will create a user when called
+	Echo "Please enter the user"
+	Read user
+	Sudo useradd $username
+}
+	- How do you call a function in Linux? You do so by calling the function name
+	- You can only call a function out of that function
+	ec2-user@ip-172-31-77-155 ~]$ cat function1.sh
+	#!/bin/bash
+	createuser()
+	{
+	        echo "Please enter the user"
+	        read username
+	        sudo useradd $username
+	        echo "$username has succesfully been created"        id $user
+	}
+	createuser
+	- Functions start with the function name() and ends with the function name as well as seen on the above script
+	- You also need the curl braces between your input
+	ec2-user@ip-172-31-77-155 ~]$ cat function2.sh
+	#!/bin/bash
+	start()
+	{
+	        variable=boy
+	        echo "This server will start after you pass the correct variable"
+	        read variable1
+	        if [ $variable == $variable1 ]
+	        then
+	        echo "You have entered the correct variable"
+	        else
+	        echo " YOu have entered the wrong variable"
+	        fi
+	        echo "end of file"
+	}
+	start
+	- Functions are used to avoid repetitions in our code as we can just call them during the code
+	#!/bin/bashcheckuser()
+	{
+	if [ -e /etc/passwd ]
+	then
+	echo "it exist. Please proceed ..."
+	grep ec2-user /etc/passwd
+	#tail -5 /etc/passwd
+	touch test24.java /home/ec2-user/
+	touch testb.py . #
+	ls testb.py .
+	else
+	echo "It doesn't exist"
+	fi
+	}
+	echo "Before function"
+	checkuser
+	- See above code
+
 	
 
 
