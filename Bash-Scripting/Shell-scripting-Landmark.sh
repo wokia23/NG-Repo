@@ -445,6 +445,49 @@ Create-user()
 	echo "Before function"
 	checkuser
 	- See above code
+	
+								CRONTAB CLASS
+	- Explain your experience in bash shell scripting? I have written a script for server monitoring
+	- The script continuously monitors our server and ensure that it does not run above a defined threshold. 85% in this case
+	#!/bin/bash
+	THRESHOLD=85
+	df -h | grep -vE 'Filesystem|tmpfs|cdrom' | awk '{ print $5 " " $1 }' | while read output;
+	do
+	  echo $output  usep=$(echo $output | awk '{ print $1 }' | cut -d'%' -f1 )
+	  partition=$(echo $output | awk '{ print $2 }' )
+	  if [ $usep -ge $THRESHOLD ]; then
+	     echo "Running out of memory space \"$partition ($usep%)\" on $(hostname) as on date $(date)" |
+	     mail -s "Alert: Almost out disk space $usep% kbrigthain@gmail.com"
+	  fi
+	done
+	- The above script monitors CPU utilization in your servers
+	- Developers write code in the build server
+	- I have written a shell script for data base backup
+	- To copy from one server to another you use SCP command
+		- I have written a shell script for package management, Patch optimization, data backup and user and file manager
+	- Now how do I automate my task as a DevOps engineer
+	- To automate a task you use a cron job
+	- Cron jobs run at specific intervals
+	- Cron -e lets you edit the cron table
+	- Cron -l lets you list the cron table
+	- To install crontab run sudo yum install crontabs.noarch
+	- This helps install the crontab
+	- Now to edit it run crontab -e
+	- To generate a cron table go to crontab generator
+	- To generate a cron job copy the file path you want to create the job for a go to https://crontab-generator.org/ and paste it in the "command to execute" space and it gives you what to paste in the cron file.
+	- Who should have access to crontab?
+	- The uptime command tells you how long that server has been running
+	- To limit access to the cron table you create a file called cron.allow and cron.deny
+	- To find the number of users in an account run ls /home. This will list all the users in that server
+	- Now create a file called cron.deny by running touch /etc/cron.deny
+	- Once the cron.allow is created no user is allowed to have access to the crontab UNLESS they are added to the file but for cron.deny the user has to be added to the file to be denied access to it
+	- That’s how you control access to cron jobs
+	- The reason why we do this is to avoid the wrong people from gaining access to certain automations
+	- Landmark recommends to use the cron.allow instead of the cron.deny
+	
+
+	
+
 
 	
 

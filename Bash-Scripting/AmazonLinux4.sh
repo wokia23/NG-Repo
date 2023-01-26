@@ -100,7 +100,7 @@ then
         sudo ./aws/install
         echo "awscli-2 has succesfully been installed in your server"
         #This part of the script will install wget 
-        sudo dnf install wget -y 
+        sudo yum install wget -y 
         echo "wget has succesfully been installed in your server"
        #This command will install tree
         sudo yum install tree -y
@@ -109,18 +109,9 @@ then
         sudo yum-config-manager \
             --add-repo \
             https://download.docker.com/linux/rhel/docker-ce.repo
-<<<<<<< HEAD
-            sudo yum install -y yum-utils
-        sudo yum-config-manager \
-            --add-repo \
-            https://download.docker.com/linux/rhel/docker-ce.repo
-        sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-        sudo systemctl start docker
-=======
         sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
         sudo systemctl start docker
         sudo docker run hello-world
->>>>>>> 7bc880089ab1cee6046c4ced1e075eecd49af784
         echo "Docker has succesfully been installed in your server"
         # Please store all temporary files that you will not need in this direct
         mkdir -p /tmp/storage/
@@ -131,47 +122,6 @@ then
     else
         echo "There was a problem with the operating system you selected"
     fi
-<<<<<<< HEAD
-elif cat /etc/system-release|grep -i 'Ubuntu' 
-then
-sudo yum update -y
-sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-
-sudo yum install -y ansible
-sudo yum -y install unzip
- #This part of the script will install awscl2 for this server
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "aws
-unzip awscliv2.zip
-sudo ./aws/install
-echo "awscli-2 has succesfully been installed in your server"
-#This part of the script will install wget 
-sudo dnf install wget -y 
-echo "wget has succesfully been installed in your server"
-This command will install tree
-sudo yum install tree -y
-#This part of the script will install docker
-sudo yum install -y yum-utils
-sudo yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/rhel/docker-ce.repo
-    sudo yum install -y yum-utils
-sudo yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/rhel/docker-ce.repo
-    sudo yum install -y yum-utils
-sudo yum-config-manager \
-    --add-repo \
- https://download.docker.com/linux/rhel/docker-ce.repo
-sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-sudo systemctl start docker
-echo "Docker has succesfully been installed in your server"
-# Please store all temporary files that you will not need in this direct
-mkdir -p /tmp/storage/
-chown ec2-user:ec2-user /tmp/storage
-echo "Your temporary directory has been created. This directory will be 
-# This command will delete all files in the /tmp/storage directory
-rm -rf /tmp/storage/*
-    
-=======
 elif cat /etc/issue|grep -i 'Ubuntu' 
 then
         sudo adduser 
@@ -179,7 +129,7 @@ then
         sudo apt-add-repository ppa:ansible/ansible
         sudo apt install ansible
          #This part of the script will install awscl2 for this server
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "aws
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
         unzip awscliv2.zip
         sudo ./aws/install
         echo "awscli-2 has succesfully been installed in your server"
@@ -199,7 +149,17 @@ then
         echo "Your temporary directory has been created. This directory will be 
         # This command will delete all files in the /tmp/storage directory
         rm -rf /tmp/storage/*
->>>>>>> 7bc880089ab1cee6046c4ced1e075eecd49af784
 else
     echo "Files does not exist or you have selected the wrong operating system"
 fi
+THRESHOLD=85
+df -h | grep -vE 'Filesystem|tmpfs|cdrom' | awk '{ print $5 " " $1 }' | while read output;
+do
+  echo $output
+  usep=$(echo $output | awk '{ print $1 }' | cut -d'%' -f1 )
+  partition=$(echo $output | awk '{ print $2 }' )
+  if [ $usep -ge $THRESHOLD ]; then
+     echo "Running out of memory space \"$partition ($usep%)\" on $(hostname) as on date $(date)" |
+     mail -s "Alert: Almost out disk space $usep% kbrigthain@gmail.com"
+  fi
+done
