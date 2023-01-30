@@ -74,6 +74,56 @@ INSTALLING JENKINS
 	- Jenkins uses plugins
 	- Jenkins is used for continuous integration, continuous delivery, continuous monitoring, continuous deployment, continuous security, continuous security and continuous development
 	
+	INSTALLING NEXUS
+	- Create a user called nexus and sudo into that user
+	- https://devopscube.com/how-to-install-latest-sonatype-nexus-3-on-linux/
+	Sonatype Nexus is one of the best open-source artifact management tools. It is some tool that you cannot avoid in your CI/CD pipeline. It effectively manages deployable artifacts.
+	Sonatype Nexus System Requirements
+		Minimum 1 VCPU & 2 GB Memory
+		Server firewall opened for port 22 & 8081
+		OpenJDK 8
+		All Nexus processes should run as a non-root nexus user.
+	Note: For production setup, please consider minimum production hardware requirements based on the nexus usage and data storage. Check out the official system requirements document for detailed information
+	Sonatype Nexus 3 on Linux ec2
+	This article guides you to install and configure Sonatype Nexus 3 in a secure way on an ec2 Linux System.
+	Note: This was tested on a Redhat machine and it will work on Centos or related Linux flavors as well.
+	Step 1: Login to your Linux server and update the yum packages. Also install required utilities.
+	sudo yum update -y
+sudo yum install wget -y
+	Step 2: Install OpenJDK 1.8
+	sudo yum install java-1.8.0-openjdk.x86_64 -y
+	Step 3: Create a directory named app and cd into the directory.
+	sudo mkdir /app && cd /app
+	Step 4: Download the latest nexus. You can get the latest download links fo for nexus from here.
+	sudo wget -O nexus.tar.gz https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+	Untar the downloaded file.
+	sudo tar -xvf nexus.tar.gz
+	Rename the untared file to nexus.
+	sudo mv nexus-3* nexus
+	Step 5: As a good security practice, it is not advised to run nexus service with root privileges. So create a new user named nexus to run the nexus service.
+	sudo adduser nexus
+	Change the ownership of nexus files and nexus data directory to nexus user.
+	sudo chmod -R 775 /app/nexus 
+	sudo chmod -R 775 /app/sonatype-work 
+	sudo chown -R nexus:nexus /app/nexus
+sudo chown -R nexus:nexus /app/sonatype-work
+	Step 6: Open /app/nexus/bin/nexus.rc file
+	sudo vi  /app/nexus/bin/nexus.rc
+	Uncomment run_as_user parameter and set it as following.
+	run_as_user="nexus"
+	Step 7: If you want to change the default nexus data directory, open the nexus properties file and change the data directory -Dkaraf.data parameter to a preferred location as shown below. If you don’t specify anything, by default nexus data directory will be set to /app/sonatype-work/nexus3
+	Tip: For production setup, it is is always better to mount the nexus data directory to a separate data disk attached to the server. So that backup and restore can be done easily.
+	Create Nexus as a service
+	Sudo ln -s /app/nexus/bin/nexus /etc/init.d/nexus 
+	Switch to the nexus user and start the nexus service as follows 
+	Sudo systemctl start nexus
+	Sudo systemctl enable nexus 
+	- Sonaqube runs on port 900 so after running all the commands you can do a telnet on the server ip n port 9000
+	- So it will look like telnet xxx.xx.xx.xxx  9000 where xxx.xx.xx.xxx is the server IP
+	- You can get the server IP by running hostname -I
+	- The output should say connected
+	
+
 	
 	
 	

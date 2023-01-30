@@ -101,15 +101,15 @@ then
         echo "wget has succesfully been installed in your server"
        #This command will install tree
         sudo yum install tree -y
-        #This part of the script will install docker
-        sudo yum install -y yum-utils
-        sudo yum-config-manager \
-            --add-repo \
-            https://download.docker.com/linux/rhel/docker-ce.repo
-        sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-        sudo systemctl start docker
-        sudo docker run hello-world
-        echo "Docker has succesfully been installed in your server"
+        # #This part of the script will install docker
+        # sudo yum install -y yum-utils
+        # sudo yum-config-manager \
+        #     --add-repo \
+        #     https://download.docker.com/linux/rhel/docker-ce.repo
+        # sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        # sudo systemctl start docker
+        # sudo docker run hello-world
+        # echo "Docker has succesfully been installed in your server"
         #This command will install SSM
         sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
         sudo systemctl start amazon-ssm-agent
@@ -119,11 +119,22 @@ then
         sudo yum install unzip wget tree git -y
         sudo yum install java-11-openjdk-devel
         sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
-        rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-        sudo yum install jenkins
+        sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+        sudo yum install jenkins -y
         sudo systemctl start jenkins
         sudo systemctl enable jenkins
         echo "Jenkins has been succesfully installed on your server"
+        #This commands will install Nexus to your server
+        sudo yum update -y 
+        sudo mkdir /app 
+        cd /app 
+        sudo wget -O nexus.tar.gz https://download.sonatype.com/nexus/3/latest-unix.tar.gz 
+        sudo tar -xvf nexus.tar.gz
+        sudo mv nexus-3* nexus
+        sudo chown -R nexus:nexus /app/nexus
+        sudo chown -R nexus:nexus /app/sonatype-work
+        sudo chmod -R 775 /app/nexus 
+        sudo chmod -R 775 /app/sonatype-work 
         # Please store all temporary files that you will not need in this direct
         mkdir -p /tmp/storage/
         chown ec2-user:ec2-user /tmp/storage
