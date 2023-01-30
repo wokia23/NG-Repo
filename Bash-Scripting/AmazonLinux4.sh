@@ -1,7 +1,7 @@
 #!/bin/bash
 username1=brigthain
-username2=emmanuel
-username3=joshua
+username2=ansible
+username3=nexus
 echo "Please enter your username"
 read username
 if [ -f /etc/system-release ]
@@ -90,14 +90,11 @@ then
         rm -rf /tmp/storage/*
     elif cat /etc/system-release|grep -i 'Red Hat Enterprise Linux' 
     then
-        sudo yum update -y
-         sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-
-         sudo yum install -y ansible
-         sudo yum -y install unzip
          #This part of the script will install awscl2 for this server
-         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "aws
+         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
         unzip awscliv2.zip
         sudo ./aws/install
+
         echo "awscli-2 has succesfully been installed in your server"
         #This part of the script will install wget 
         sudo yum install wget -y 
@@ -113,10 +110,24 @@ then
         sudo systemctl start docker
         sudo docker run hello-world
         echo "Docker has succesfully been installed in your server"
+        #This command will install SSM
+        sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+        sudo systemctl start amazon-ssm-agent
+        sudo systemctl enable amazon-ssm-agent
+        echo "SSM has succesfully been installed in your server"
+        #These commands will install Jenkins in your server
+        sudo yum install unzip wget tree git -y
+        sudo yum install java-11-openjdk-devel
+        sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
+        rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+        sudo yum install jenkins
+        sudo systemctl start jenkins
+        sudo systemctl enable jenkins
+        echo "Jenkins has been succesfully installed on your server"
         # Please store all temporary files that you will not need in this direct
         mkdir -p /tmp/storage/
         chown ec2-user:ec2-user /tmp/storage
-        echo "Your temporary directory has been created. This directory will be 
+        echo "Your temporary directory has been created" 
         # This command will delete all files in the /tmp/storage directory
         rm -rf /tmp/storage/*
     else
@@ -146,10 +157,10 @@ then
         # Please store all temporary files that you will not need in this direct
         mkdir -p /tmp/storage/
         chown ec2-user:ec2-user /tmp/storage
-        echo "Your temporary directory has been created. This directory will be 
+        echo "Your temporary directory has been created" 
         # This command will delete all files in the /tmp/storage directory
         rm -rf /tmp/storage/*
-else
+else     
     echo "Files does not exist or you have selected the wrong operating system"
 fi
 THRESHOLD=85
