@@ -123,6 +123,224 @@ sudo chown -R nexus:nexus /app/sonatype-work
 	- You can get the server IP by running hostname -I
 	- The output should say connected
 	
+	INSTALLING NEXUS
+	How to Install Nexus on RedHat Linux
+	Nexus is binary repository manager, used for storing build artifacts. We will eventually integrate Nexus with Jenkins for uploading WAR/EAR/JAR files there.
+	
+	Here are the steps for installing Sonatype Nexus 3 in RHEL in EC2 on AWS. Please create a new Redhat EC2 instance with small type. Choose Redhat Enterprise 8.
+	
+	Pre-requisites:
+	Make sure you open port 8081 in AWS security group
+	
+	Installation Steps:
+	
+	sudo yum install wget -y
+
+	Download Open JDK
+	sudo yum install java-1.8.0-openjdk.x86_64 -y
+	Execute the below command to navigate to /opt directory by changing directory:
+	cd /opt
+	
+	Download Nexus
+	sudo wget http://download.sonatype.com/nexus/3/nexus-3.23.0-03-unix.tar.gz
+	
+	Extract Nexus
+	sudo tar -xvf nexus-3.23.0-03-unix.tar.gz
+	sudo mv nexus-3.23.0-03 nexus
+	
+	Create a user called Nexus
+	sudo adduser nexus
+	
+	Change the ownership of nexus files and nexus data directory to nexus user.
+	sudo chown -R nexus:nexus /opt/nexus
+	sudo chown -R nexus:nexus /opt/sonatype-work
+	
+	Configure to run as Nexus user
+	change as below screenshot by removing # and adding nexus
+	 sudo vi /opt/nexus/bin/nexus.rc
+	
+	Modify memory settings in Nexus configuration file
+	sudo vi /opt/nexus/bin/nexus.vmoptions
+	
+	Modify the above file as shown in red highlighted section:
+	
+	
+	-Xms512m
+	-Xmx512m
+	-XX:MaxDirectMemorySize=512m
+	after making changes, press wq! to come out of the file.
+	
+	Configure Nexus to run as a service
+	
+	sudo vi /etc/systemd/system/nexus.service
+	Copy the below content highlighted in green color.
+	
+	[Unit]
+	Description=nexus service
+	After=network.target
+	[Service]
+	Type=forking
+	LimitNOFILE=65536
+	User=nexus
+	Group=nexus
+	ExecStart=/opt/nexus/bin/nexus start
+	ExecStop=/opt/nexus/bin/nexus stop
+	User=nexus
+	Restart=on-abort
+	[Install]
+	WantedBy=multi-user.target
+	
+	Create a link to Nexus
+	sudo ln -s /opt/nexus/bin/nexus /etc/init.d/nexus
+	
+	Execute the following command to add nexus service to boot.
+	
+	sudo chkconfig --add nexus
+	sudo chkconfig --levels 345 nexus on
+	
+	Start Nexus
+	sudo service nexus start
+	
+	Check whether Nexus service is running
+	sudo service nexus status
+	
+	Check the logs to see if Nexus is running
+	tail -f /opt/sonatype-work/nexus3/log/nexus.log
+	
+	You will see Nexus started..
+	If you Nexus stopped, review the steps above.
+	
+	Now press Ctrl C to come out of this windows.
+	
+	Once Nexus is successfully installed, you can access it in the browser by URL - http://public_dns_name:8081
+	
+	Click on Sign in link
+	user name is admin and password can be found by executing below command:
+	
+	sudo cat /opt/sonatype-work/nexus3/admin.password
+	
+	
+	
+	Copy the password and click sign in.
+	Now setup admin password as admin123
+	
+	
+	you should see the home page of Nexus:
+	
+	
+	- 
+	
+CONFIGURING JENKINS ON THE GUI
+          Jenkins Integration: mvn package
+	- https://github.com/BK-organization/maven-web-application
+	- To clone the project we can run git clone plus url 
+	- For repos in a private repo you need username and password (credentials) but you don’t need one with public repos
+	- Add your username and password after pasting the url for the Github repo
+	- The build system we will be using for our project is maven
+	- To create a project to new item and input a name for the project and select freestyle project 
+	- Now you input the description for the project and then the name of the SCM which in our case is GitHub
+	- 
+	
+	- The above picture shows you the output of the first build
+	- The above is just like cloning your code from git hub
+	- To edit a build select the project and select configure and then go to build 
+	- To add plugins to Jenkins go to manage Jenkins-> global tool configuration and then go add the tool you want
+	- In our case we added maven 3.8.7
+	- Now go back to your project under configure->build and select the version of maven you just added
+	
+	Jenkins SonarQube integration: mvn sonar:sonar
+	- Here the SonarQube server must be running
+
+    INSTALLING SONAQUBE ON AMAZON LINUX 2
+	- Start by installing java first 
+	Steps to set JAVA enviroment variable on Amazon Linux in 4 simple steps. (Updated 14th Jan 2020)
+	Step 1: Check & install correct JAVA version (Optional)
+	Check if JAVA exists on your device by running : java --version
+	The latest version of JAVA OpenJDK is 1.8, by default Amazon Linux AMI may or may not a JAVA installation so you would directly want to install/upgrade it use below command :
+	You can list all the available OpenJDK versions using : sudo yum list | grep openjdk
+	You can select the desired version from the output list and install it
+	sudo yum install java-1.8.0-openjdk.x86_64
+	If you already have JAVA installed you can change/check the JAVA version using below command.
+	$ sudo update-alternatives --config java
+	Note: If above command doesn’t give any JAVA version option then try once again after running sudo yum update -y command.
+	Select an option as shown in the image below:
+	
+	Note: It is advisable to remove the previous version so that it doesn’t switch back.
+	Step 2: Find out where JAVA is!
+	For Linux systems, you can recursively run the commandfile followed by which command to find the JAVA installation location as shown in the image below.
+	$ file $(which java)
+	 
+	 The above output shows that JAVA is pointing to a /etc/alternatives/java file but that is not the actual location of JAVA hence you will need to dig in more to fetch its actual path.
+	Step 3 :  Follow the lead!
+	In the previous step, we located /etc/alternatives/java file this file will get us to the actual location where JAVA config files are.
+	Run the file command on that location /etc/alternatives/java.
+	$ file /etc/alternatives/java
+	There you go… You’ve now located JAVA config file location which we will use in below steps to set JAVA environment variable
+	You can re-affirm the location running  file command on the symbolic path:
+	$ file /usr/lib/jvm/java-8-openjdk.x86_64/bin/java
+/usr/lib/jvm/java-8-openjdk.x86_64/bin/java: ELF 64-bit LSB executable...
+	This means that the JAVA is installed perfectly, Now go ahead and copy the path of above output
+	/usr/lib/jvm/jdk-1.8.0-openjdk.x86_64/bin
+	Step 4:  Set JAVA environment variable 
+	To set the JAVA_HOME environment variables on Linux/Unix go to .baschrc file.
+	Note: .bashrc file is different for each user in Linux, hence you will need to update the same file for every user you want to set environment variable for.
+	Copy paste below two lines in the .bashrc file found in home the directory of ec2-user and root user:
+	 export JAVA_HOME="/usr/lib/jvm/jdk-1.8.0-openjdk.x86_64"
+	 PATH=$JAVA_HOME/bin:$PATH
+	Save the file and run the following command:
+	source .bashrc
+	Note: Running the source command is mandatory otherwise you will not see the environment variable set.
+	Alternatively, you can also set $PATH variable through the command line:
+	Run the following command to add $JAVA_HOME variable to $PATH:
+	$ export PATH=$PATH:$JAVA_HOME/bin
+   Installing Sonaqube:
+	Step 1 : Download and Install SonarQube
+	Ensure you have java environment variable set on your system, usually amazon linux has this already preconfigured with it but incase if your using any other distro then I would recommend to do this, you can find reference for the same here.
+	First add repo using below command
+	sudo wget -O /etc/yum.repos.d/sonar.repo http://downloads.sourceforge.net/project/sonar-pkg/rpm/sonar.repo
+	then install SonarQube by running :
+	sudo yum install sonar
+	you can start/stop sonar using : sudo service start/stop sonar
+	Once this is done, you should be able to access SonarQube dashboard via browser with http://<ipaddress>:9000
+	Step 2 : Install and start MySQL database (Optional)
+	sudo yum install mysqld
+	sudo service mysqld start
+	To configure root password for first time use below command : 
+	sudo mysql_secure_installation
+	MySQL installation is optional as it not required while integrating it with Jenkins and Git which is what we are trying to do in this series.
+	- Username is admin and password is admin 
+
+
+	- INSTALLING SONARQUBE ON RED HAT 9
+	Snap is available for Red Hat Enterprise Linux (RHEL) 8 and RHEL 7, from the 7.6 release onward.
+	The packages for RHEL 8 and RHEL 7 are in each distribution’s respective Extra Packages for Enterprise Linux (EPEL) repository. The instructions for adding this repository diverge slightly between RHEL 8 and RHEL 7, which is why they’re listed separately below.
+	The EPEL repository can be added to RHEL 8 with the following command:
+	sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+sudo dnf upgrade
+	
+	The EPEL repository can be added to RHEL 7 with the following command:
+	sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+	
+	Adding the optional and extras repositories is also recommended:
+	sudo subscription-manager repos --enable "rhel-*-optional-rpms" --enable "rhel-*-extras-rpms"
+sudo yum update
+	Snap can now be installed as follows:
+	sudo yum install snapd
+	Once installed, the systemd unit that manages the main snap communication socket needs to be enabled:
+	sudo systemctl enable --now snapd.socket
+	To enable classic snap support, enter the following to create a symbolic link between /var/lib/snapd/snap and /snap:
+	sudo ln -s /var/lib/snapd/snap /snap
+	Either log out and back in again or restart your system to ensure snap’s paths are updated correctly.
+	Install Sonar
+	To install Sonar, simply use the following command:
+	sudo snap install sonar
+	Start sonar 
+	Sudo systemctl start sonar
+	Verify status
+	Sudo systemctl status sonar
+	
+	ccdwscdw
+
 
 	
 	
