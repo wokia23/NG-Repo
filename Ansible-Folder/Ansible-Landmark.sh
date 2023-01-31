@@ -177,11 +177,11 @@ Copy module:
 
 Fetch module:
 - This module is used to download files from a remote node to the control machine
-- Ansible group1 -m fetch -a "src=/home/ansible/file7.py dest=/home/ansible/file8.txt"
+# Ansible group1 -m fetch -a src=/home/ansible/file7.py dest=/home/ansible/file8.txt"
 
 Yum module
 - Used to install a package in the ansible client
-- Ansible group1 -m yum -a "name=httpd state=present" --become"
+# - Ansible group1 -m yum -a "name=httpd state=present" --become"
 
 The service module
 - Used to manage services running on remote nodes
@@ -385,10 +385,10 @@ Import or include:
     tasks:
       - import_tasks:
           install_httpd.yaml
-        when: ansible_os_family=="RedHat"
+         when: ansible_os_family=="RedHat"
       - import_tasks:
           install_apache2.yaml
-        when: ansible_os_family=="Debian"
+          when: ansible_os_family=="Debian"
 - Here the tasks is ran in all servers if not specified in the child tasks
 - What's the difference between import tasks and include tasks: Import tasks will import the tasks if it has static content. So here the values do not change
 - Include tasks are used when the tasks are dynamic. That means the variables are constantly changing
@@ -403,7 +403,7 @@ Import or include:
       - include_tasks: install_{{ansible_os_family}}.yaml
       - include_tasks: install_{{ansible_os_family}}.yaml
       - include_tasks: install_{{ansible_os_family}}.yaml
-- Here you want to make sure that the names you give your child taks matches the names on the include tasks. For example the name for the first task should be install_Redhat.yaml so that ansible can dynamically pull that tasks as it goes. This makes the playbooks reusable 
+- Here you want to make sure that the names you give your child tasks matches the names on the include tasks. For example the name for the first task should be install_Redhat.yaml so that ansible can dynamically pull that tasks as it goes. This makes the playbooks reusable 
 - In my case I named all the webservers installation web_OSName.yaml and all the java installation jav_OSName.yaml
 - See below
 
